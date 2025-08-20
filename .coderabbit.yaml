@@ -1,0 +1,27 @@
+# .coderabbit.yaml
+language: "ko-KR" # 한국어
+early_access: false
+reviews:
+  profile: "assertive"
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+  instructions: |
+    이름(Naming) 규칙으로는, 약어에 대한 표기 일관성을 위해 프로젝트별로 모두 대문자로 표기할 약어 목록을 정의하도록 권장합니다. 예를 들어, HTTP, API, URL이 모두 대문자 표기 대상이라면 HTTPAPIURL과 같이 작성하는 방식입니다  ￼. 또한, 패키지 이름은 모두 소문자로 작성해야 하며, 언더스코어(_)나 대문자 사용은 피하는 것이 좋습니다. 예로 com.navercorp.apigateway는 적절하지만 com.navercorp.apiGateway나 com.navercorp.api_gateway는 부적절한 예입니다  ￼.
+
+     클래스 및 인터페이스 이름의 명명 규칙도 강조되었는데, 클래스와 인터페이스 이름은 **대문자 카멜표기법(Upper Camel Case)**을 적용해야 하며, 클래스 이름은 명사 또는 명사절로, 인터페이스 이름은 명사나 형용사 형태로 작성해야 합니다. 예로는 Reservation, AccessToken, RowMapper, AutoClosable 등이 있습니다  ￼. 특히 테스트용 클래스의 경우 이름 끝에 “Test”를 붙이는 것이 권장됩니다. 예: WatcherTest  ￼.
+
+     다음으로 메서드 명명 규칙에 따르면, 메서드 이름은 **소문자 카멜표기법(Lower Camel Case)**을 따르며, 테스트 클래스의 메서드에서는 언더스코어(_) 사용이 허용됩니다. 메서드 이름은 일반적으로 동사로 시작해야 하며, 변환 메서드나 Builder 패턴의 경우 전치사(to, with 등) 시작도 허용됩니다. 예를 들어 renderHtml(), toString(), withUserId(String id) 등이 이에 해당합니다  ￼.
+
+     **상수(Constant)**의 명명 규칙은 static final 필드는 모두 대문자 + 언더스코어( _ ) 형식으로 작성하도록 하였습니다. 예를 들어 UNLIMITED, POSTAL_CODE_EXPRESSION 등이 이에 해당합니다  ￼.
+
+     변수(Variable) 명명은 상수가 아닌 멤버 변수, 지역 변수 또는 파라미터 변수에서 소문자 카멜표기법을 사용하고, 단일 문자 변수는 블록 범위가 짧은 임시 변수에만 허용하도록 하였습니다. 일반적인 변수에는 authorized, accessToken과 같은 이름을 사용하는 것이 바람직합니다  ￼.
+
+     마지막으로 선언(Declarations) 관련 규칙에서는, 클래스를 import할 때는 와일드카드(*) 사용을 피하고 각 클래스를 명시적으로 import하도록 권장합니다. 단, static import의 경우만 예외로 와일드카드를 사용할 수 있습니다  ￼. 또한, 선언 시 modifier(수정자)의 순서는 Java Language Specification에 따라 public, protected, private, abstract, static, final, transient, volatile, synchronized, native, strictfp 등으로 일관된 순서를 유지해야 합니다
+chat:
+  auto_reply: true

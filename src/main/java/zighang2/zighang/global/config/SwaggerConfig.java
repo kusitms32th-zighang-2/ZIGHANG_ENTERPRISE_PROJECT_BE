@@ -18,10 +18,10 @@ public class SwaggerConfig {
     private String contextPath;
 
     @Bean
-    public OpenAPI Express2API() {
+    public OpenAPI express2API() {
         Info info = new Info()
                 .title("Express2 API")
-                .description("Express2 API API 명세서")
+                .description("Express2 API 명세서")
                 .version("1.0.0");
 
         String jwtSchemeName = "JWT TOKEN";

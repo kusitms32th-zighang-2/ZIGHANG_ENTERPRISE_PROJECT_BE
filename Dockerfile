@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk AS builder
+FROM azul/zulu-openjdk-alpine:17-latest AS builder
 WORKDIR /app
 COPY . .
 RUN chmod +x ./gradlew

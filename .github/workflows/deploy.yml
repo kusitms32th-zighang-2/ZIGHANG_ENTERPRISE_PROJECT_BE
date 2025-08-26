@@ -49,8 +49,8 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.NCP_CONTAINER_REGISTRY }}/app:latest
-          cache-from: type=registry,ref=${{ secrets.NCP_CONTAINER_REGISTRY }}/app:latest
+          tags: ${{ secrets.NCP_CONTAINER_REGISTRY }}/express2:${{ github.sha }}
+          cache-from: type=registry,ref=${{ secrets.NCP_CONTAINER_REGISTRY }}/express2:${{ github.sha }}
           cache-to: type=inline
           secrets: |
             GIT_AUTH_TOKEN=${{ secrets.GIT_TOKEN }}
@@ -68,8 +68,8 @@ jobs:
           password: ${{ secrets.DEV_PASSWORD }}
           port: ${{ secrets.DEV_PORT }}
           script: |
-            docker pull ${{ secrets.NCP_CONTAINER_REGISTRY }}/:latest
+            docker pull ${{ secrets.NCP_CONTAINER_REGISTRY }}/express2:${{ github.sha }}
             docker stop $(docker ps -a -q)
             docker rm $(docker ps -a -q)
-            docker run -d -p 8080:8080 --name app ${{ secrets.NCP_CONTAINER_REGISTRY }}/:latest     
+            docker run -d -p 8080:8080 --name app ${{ secrets.NCP_CONTAINER_REGISTRY }}/express2:${{ github.sha }}   
             docker image prune -f

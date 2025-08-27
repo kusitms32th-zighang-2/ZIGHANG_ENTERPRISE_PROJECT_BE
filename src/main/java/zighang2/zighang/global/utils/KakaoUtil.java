@@ -13,8 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import zighang2.zighang.global.payload.code.status.ErrorStatus;
-import zighang2.zighang.global.payload.exception.GeneralException;
 import zighang2.zighang.web.dto.KakaoDTO;
 
 import java.util.Arrays;
@@ -27,6 +25,8 @@ public class KakaoUtil {
     private String client;
     @Value("${kakao.auth.redirect}")
     private String redirect;
+    @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
+    private String clientSecret;
 
     private final ObjectMapper objectMapper;
 
@@ -38,8 +38,9 @@ public class KakaoUtil {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", client);
-        params.add("redirect_url", redirect);
+        params.add("redirect_uri", redirect);
         params.add("code", accessCode);
+        params.add("client_secret", clientSecret);
 
         HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(params, headers);
 

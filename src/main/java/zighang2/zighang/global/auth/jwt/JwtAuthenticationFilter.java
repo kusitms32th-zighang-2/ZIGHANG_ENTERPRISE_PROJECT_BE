@@ -5,7 +5,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,7 +13,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import zighang2.zighang.global.auth.UserPrincipal;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
-import zighang2.zighang.global.payload.exception.GeneralException;
+import zighang2.zighang.global.payload.exception.handler.BadRequestHandler;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.dto.UserDto;
 import zighang2.zighang.web.repository.UserRepository;
@@ -37,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String userId = jwtProvider.getUserIdFromToken(token);
 
             User user = userRepository.findById(Long.parseLong(userId))
-                    .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+                    .orElseThrow(() -> new BadRequestHandler(ErrorStatus.USER_NOT_FOUND));
 
             UserDto userDto = UserDto.builder()
                     .id(user.getId())
@@ -47,8 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UserDetails userDetails = UserPrincipal.create(userDto);
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
-        } else {
-            throw new GeneralException(ErrorStatus.INVALID_TOKEN);
         }
         filterChain.doFilter(request, response);
     }

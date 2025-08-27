@@ -23,8 +23,8 @@ public class SecurityConfig {
                 ))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/oauth2/**", "/error").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/", "/login","/auth/login/kakao/**", "/oauth2/**", "/error").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-resources/**","/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().permitAll()
                 )
                 .logout(logout -> logout

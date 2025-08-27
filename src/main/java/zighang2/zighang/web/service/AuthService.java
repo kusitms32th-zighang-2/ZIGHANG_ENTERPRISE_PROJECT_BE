@@ -3,6 +3,8 @@ package zighang2.zighang.web.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import zighang2.zighang.global.payload.code.status.ErrorStatus;
+import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
 import zighang2.zighang.global.service.RedisService;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.auth.jwt.KakaoUtil;
@@ -24,7 +26,7 @@ public class AuthService {
     private final RedisService redisService;
     private final PasswordEncoder passwordEncoder;
 
-    public TokenResponseDto oAuthLogin(String accessCode){
+    public TokenResponseDto.LoginTokenResponseDto oAuthLogin(String accessCode){
         KakaoDto.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
         KakaoDto.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
 
@@ -38,7 +40,7 @@ public class AuthService {
         String refreshToken = jwtProvider.createRefreshToken();
         redisService.setRefreshToken(user.getEmail(),refreshToken);
 
-        return new TokenResponseDto(accessToken, refreshToken);
+        return new TokenResponseDto.LoginTokenResponseDto(user.getId(),accessToken, refreshToken);
     }
 
     private User createNewUser(String email, String nickname) {
@@ -52,5 +54,22 @@ public class AuthService {
                         .userRole(UserRole.GENERAL)
                         .build()
         );
+    }
+
+    public TokenResponseDto.RefreshTokenResponseDto recreateAccessToken(String refreshToken) {
+        if (!jwtProvider.validateToken(refreshToken)) {
+            throw new IllegalArgumentException("Invalid refresh token");
+        }
+
+        String email = jwtProvider.getUserIdFromToken(refreshToken);
+        User user=userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
+
+        String savedToken = redisService.getRefreshToken(email);
+        if (savedToken == null || !savedToken.equals(refreshToken)) {
+            throw new IllegalArgumentException("Refresh token mismatch");
+        }
+
+        return jwtProvider.recreate(user,refreshToken);
     }
 }

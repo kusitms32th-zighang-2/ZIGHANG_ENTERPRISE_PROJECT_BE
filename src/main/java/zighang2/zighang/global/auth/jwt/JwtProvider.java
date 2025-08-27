@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.handler.BadRequestHandler;
+import zighang2.zighang.global.service.RedisService;
 import zighang2.zighang.web.domain.user.User;
+import zighang2.zighang.web.dto.TokenResponseDto;
 
 import java.security.Key;
 import java.util.Base64;
@@ -27,6 +29,8 @@ public class JwtProvider {
 
     @Value("${jwt.token.refresh-expiration-time}")
     private long refreshTokenExpirationTime;
+
+    private final RedisService redisService;
 
     @PostConstruct
     public void init() {
@@ -116,4 +120,12 @@ public class JwtProvider {
         }
     }
 
+    public TokenResponseDto.RefreshTokenResponseDto recreate(User user, String refreshToken) {
+        String accessToken = createAccessToken(user);
+        refreshToken = createRefreshToken();
+
+        redisService.setRefreshToken(user.getEmail(), refreshToken);
+
+        return TokenResponseDto.RefreshTokenResponseDto.of(user.getId(),accessToken);
+    }
 }

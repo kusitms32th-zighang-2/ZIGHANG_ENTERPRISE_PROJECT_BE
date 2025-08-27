@@ -20,7 +20,17 @@ public enum ErrorStatus implements BaseErrorCode {
     USER_ID_NULL(HttpStatus.BAD_REQUEST, "USER_1001", "사용자 아이디는 필수 입니다."),
     USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "USER_1002", "해당하는 사용자가 존재하지 않습니다."),
     NICKNAME_NOT_EXIST(HttpStatus.BAD_REQUEST, "USER_1003", "닉네임은 필수 입니다."),
-    EMAIL_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "USER_1004", "이미 존재하는 이메일 입니다.");
+    EMAIL_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "USER_1004", "이미 존재하는 이메일 입니다."),
+    INVALID_VALUE(HttpStatus.BAD_REQUEST, "USER400", "유효하지 않은 입력값입니다."),
+
+    //인증 관련 에러
+    MALFORMED_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN4012", "잘못된 형식의 토큰입니다."),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "TOKEN4011", "유효하지 않은 토큰입니다."),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "TOKEN4012", "만료된 토큰입니다."),
+    UNSUPPORTED_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN4013", "지원하지 않는 토큰입니다."),
+    EMPTY_CLAIMS(HttpStatus.BAD_REQUEST, "TOKEN4014", "클레임이 비어있습니다."),
+    EMPTY_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN4015", "비어있는 토큰입니다."),
+    ;
 
 
     private final HttpStatus httpStatus;

@@ -1,4 +1,4 @@
-package zighang2.zighang.global;
+package zighang2.zighang.global.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

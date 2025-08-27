@@ -1,4 +1,4 @@
-package zighang2.zighang.global.utils;
+package zighang2.zighang.global.auth.jwt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import zighang2.zighang.web.dto.KakaoDTO;
+import zighang2.zighang.web.dto.KakaoDto;
 
 import java.util.Arrays;
 
@@ -30,7 +30,7 @@ public class KakaoUtil {
 
     private final ObjectMapper objectMapper;
 
-    public KakaoDTO.OAuthToken requestToken(String accessCode) {
+    public KakaoDto.OAuthToken requestToken(String accessCode) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
@@ -51,7 +51,7 @@ public class KakaoUtil {
                 String.class);
 
         try {
-            KakaoDTO.OAuthToken token = objectMapper.readValue(response.getBody(), KakaoDTO.OAuthToken.class);
+            KakaoDto.OAuthToken token = objectMapper.readValue(response.getBody(), KakaoDto.OAuthToken.class);
             log.info("oAuthToken : " + token.getAccess_token());
             return token;
         } catch (JsonProcessingException e) {
@@ -59,7 +59,7 @@ public class KakaoUtil {
         }
     }
 
-    public KakaoDTO.KakaoProfile requestProfile(KakaoDTO.OAuthToken oAuthToken) {
+    public KakaoDto.KakaoProfile requestProfile(KakaoDto.OAuthToken oAuthToken) {
         RestTemplate restTemplate2 = new RestTemplate();
         HttpHeaders headers2 = new HttpHeaders();
 
@@ -75,7 +75,7 @@ public class KakaoUtil {
                 String.class);
 
         try {
-            KakaoDTO.KakaoProfile kakaoProfile = objectMapper.readValue(response2.getBody(), KakaoDTO.KakaoProfile.class);
+            KakaoDto.KakaoProfile kakaoProfile = objectMapper.readValue(response2.getBody(), KakaoDto.KakaoProfile.class);
             log.info("Received KakaoProfile: {}", kakaoProfile);
             return kakaoProfile;
         } catch (JsonProcessingException e) {

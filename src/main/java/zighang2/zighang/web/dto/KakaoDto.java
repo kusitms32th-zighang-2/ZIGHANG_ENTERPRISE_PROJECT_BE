@@ -2,7 +2,7 @@ package zighang2.zighang.web.dto;
 
 import lombok.Getter;
 
-public class KakaoDTO {
+public class KakaoDto {
     @Getter
     public static class OAuthToken{
         private String access_token;

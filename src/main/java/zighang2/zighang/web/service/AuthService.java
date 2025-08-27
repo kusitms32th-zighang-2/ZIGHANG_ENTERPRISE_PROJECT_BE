@@ -1,16 +1,15 @@
 package zighang2.zighang.web.service;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import zighang2.zighang.global.RedisService;
+import zighang2.zighang.global.service.RedisService;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
-import zighang2.zighang.global.utils.KakaoUtil;
+import zighang2.zighang.global.auth.jwt.KakaoUtil;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.domain.user.UserRole;
-import zighang2.zighang.web.dto.KakaoDTO;
-import zighang2.zighang.web.dto.TokenResponse;
+import zighang2.zighang.web.dto.KakaoDto;
+import zighang2.zighang.web.dto.TokenResponseDto;
 import zighang2.zighang.web.repository.UserRepository;
 
 import java.util.UUID;
@@ -25,9 +24,9 @@ public class AuthService {
     private final RedisService redisService;
     private final PasswordEncoder passwordEncoder;
 
-    public TokenResponse oAuthLogin(String accessCode){
-        KakaoDTO.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
-        KakaoDTO.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
+    public TokenResponseDto oAuthLogin(String accessCode){
+        KakaoDto.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
+        KakaoDto.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
 
         String email = kakaoProfile.getKakao_account().getEmail();
         String nickname = kakaoProfile.getProperties().getNickname();
@@ -39,7 +38,7 @@ public class AuthService {
         String refreshToken = jwtProvider.createRefreshToken();
         redisService.setRefreshToken(user.getEmail(),refreshToken);
 
-        return new TokenResponse(accessToken, refreshToken);
+        return new TokenResponseDto(accessToken, refreshToken);
     }
 
     private User createNewUser(String email, String nickname) {

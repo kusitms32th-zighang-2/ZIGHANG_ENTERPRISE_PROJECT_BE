@@ -38,10 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             User user = userRepository.findById(Long.parseLong(userId))
                     .orElseThrow(() -> new BadRequestHandler(ErrorStatus.USER_NOT_FOUND));
 
-            UserDto userDto = UserDto.builder()
-                    .id(user.getId())
-                    .email(user.getEmail())
-                    .build();
+            UserDto userDto = UserDto.of(user);
 
             UserDetails userDetails = UserPrincipal.create(userDto);
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

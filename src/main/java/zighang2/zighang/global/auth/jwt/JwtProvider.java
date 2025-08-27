@@ -58,18 +58,6 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String createToken(String subject){
-        Claims claims = Jwts.claims().setSubject(subject);
-        Date now = new Date();
-        return Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime()+accessTokenExpirationTime))
-                .signWith(SignatureAlgorithm.HS256,secretKey)
-                .compact();
-
-    }
-
     // 토큰 유효성 검증
     public boolean validateToken(String token) {
         try {

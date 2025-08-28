@@ -1,7 +1,6 @@
 package zighang2.zighang.web.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 
 @Getter
@@ -17,7 +16,6 @@ public class TokenResponseDto {
     }
 
     @Getter
-    @Builder
     @AllArgsConstructor
     public static class RefreshTokenResponseDto {
         private Long userId;

@@ -21,12 +21,12 @@ public class KakaoDto {
         private KakaoAccount kakao_account;
 
         @Getter
-        public class Properties {
+        public static class Properties {
             private String nickname;
         }
 
         @Getter
-        public class KakaoAccount {
+        public static class KakaoAccount {
             private String email;
             private Boolean is_email_verified;
             private Boolean has_email;
@@ -36,7 +36,7 @@ public class KakaoDto {
             private Profile profile;
 
             @Getter
-            public class Profile {
+            public static class Profile {
                 private String nickname;
                 private Boolean is_default_nickname;
             }

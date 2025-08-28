@@ -22,7 +22,7 @@ public class User extends BaseEntity {
 
     private String password;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String nickname;
 
     @Enumerated(EnumType.STRING)

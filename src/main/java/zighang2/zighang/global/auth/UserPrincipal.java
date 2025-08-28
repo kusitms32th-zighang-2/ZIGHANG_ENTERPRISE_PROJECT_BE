@@ -6,7 +6,6 @@ import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import zighang2.zighang.web.domain.user.UserRole;
 import zighang2.zighang.web.dto.UserDto;
 
 import java.util.Collection;
@@ -27,7 +26,7 @@ public class UserPrincipal implements UserDetails {
 
     public static UserPrincipal create(UserDto user) {
         List<GrantedAuthority> authorities =
-                Collections.singletonList(new SimpleGrantedAuthority(UserRole.GENERAL.toString()));
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_"+user.getRole().name()));
         return new UserPrincipal(
                 user.getId(),
                 user.getEmail(),

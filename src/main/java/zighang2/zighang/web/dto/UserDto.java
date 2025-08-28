@@ -3,12 +3,10 @@ package zighang2.zighang.web.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.domain.user.UserRole;
 
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor
 public class UserDto {

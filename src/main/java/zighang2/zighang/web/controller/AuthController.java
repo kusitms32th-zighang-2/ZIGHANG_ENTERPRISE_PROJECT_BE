@@ -18,12 +18,12 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @GetMapping("/login/kakao")
+    @PostMapping("/login/kakao")
     public ApiResponse<TokenResponseDto.LoginTokenResponseDto> kakaoLogin(@RequestParam("code") String accessCode) {
         return ApiResponse.onSuccess(authService.oAuthLogin(accessCode));
     }
 
-    @PostMapping("/refresh-token")
+    @GetMapping("/refresh-token")
     @Operation(summary = "JWT 토큰 재발급 API")
     public ApiResponse<TokenResponseDto.RefreshTokenResponseDto> refreshToken(HttpServletRequest request) {
         String token = request.getHeader("Authorization");

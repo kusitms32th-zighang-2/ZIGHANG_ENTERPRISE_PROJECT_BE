@@ -3,7 +3,6 @@ package zighang2.zighang.global.auth.jwt;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -15,9 +14,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import zighang2.zighang.web.dto.KakaoDto;
 
-import java.util.Arrays;
-
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KakaoUtil {
@@ -52,7 +48,6 @@ public class KakaoUtil {
 
         try {
             KakaoDto.OAuthToken token = objectMapper.readValue(response.getBody(), KakaoDto.OAuthToken.class);
-            log.info("oAuthToken : " + token.getAccess_token());
             return token;
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to parse Kakao access token", e);
@@ -76,10 +71,8 @@ public class KakaoUtil {
 
         try {
             KakaoDto.KakaoProfile kakaoProfile = objectMapper.readValue(response2.getBody(), KakaoDto.KakaoProfile.class);
-            log.info("Received KakaoProfile: {}", kakaoProfile);
             return kakaoProfile;
         } catch (JsonProcessingException e) {
-            log.info(Arrays.toString(e.getStackTrace()));
             throw new RuntimeException("Failed to parse Kakao access token", e);
         }
 

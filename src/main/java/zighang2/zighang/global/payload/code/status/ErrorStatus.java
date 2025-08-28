@@ -21,16 +21,16 @@ public enum ErrorStatus implements BaseErrorCode {
     USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "USER_1002", "해당하는 사용자가 존재하지 않습니다."),
     NICKNAME_NOT_EXIST(HttpStatus.BAD_REQUEST, "USER_1003", "닉네임은 필수 입니다."),
     EMAIL_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "USER_1004", "이미 존재하는 이메일 입니다."),
-    INVALID_VALUE(HttpStatus.BAD_REQUEST, "USER400", "유효하지 않은 입력값입니다."),
+    INVALID_VALUE(HttpStatus.BAD_REQUEST, "USER1005", "유효하지 않은 입력값입니다."),
 
     //인증 관련 에러
-    MALFORMED_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN4012", "잘못된 형식의 토큰입니다."),
-    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "TOKEN4011", "유효하지 않은 토큰입니다."),
-    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "TOKEN4012", "만료된 토큰입니다."),
-    UNSUPPORTED_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN4013", "지원하지 않는 토큰입니다."),
-    EMPTY_CLAIMS(HttpStatus.BAD_REQUEST, "TOKEN4014", "클레임이 비어있습니다."),
-    EMPTY_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN4015", "비어있는 토큰입니다."),
-    TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "TOKEN_INVALID", "토큰을 찾을 수 없습니다."),
+    MALFORMED_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN4001", "잘못된 형식의 토큰입니다."),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "TOKEN4010", "유효하지 않은 토큰입니다."),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "TOKEN4011", "만료된 토큰입니다."),
+    UNSUPPORTED_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN4002", "지원하지 않는 토큰입니다."),
+    EMPTY_CLAIMS(HttpStatus.BAD_REQUEST, "TOKEN4003", "클레임이 비어있습니다."),
+    EMPTY_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN4004", "비어있는 토큰입니다."),
+    TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "TOKEN4040", "토큰을 찾을 수 없습니다."),
     ;
 
 

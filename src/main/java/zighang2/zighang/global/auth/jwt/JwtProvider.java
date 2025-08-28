@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
@@ -15,9 +16,11 @@ import zighang2.zighang.web.dto.TokenResponseDto;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtProvider {
 
     @Value("${jwt.secret-key}")
@@ -52,10 +55,11 @@ public class JwtProvider {
     }
 
     // Refresh Token 생성
-    public String createRefreshToken() {
+    public String createRefreshToken(User user) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + refreshTokenExpirationTime);
         return Jwts.builder()
+                .setSubject(user.getEmail())
                 .setIssuedAt(now)
                 .setExpiration(expiration)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -63,12 +67,17 @@ public class JwtProvider {
     }
 
     // 토큰 유효성 검증
-    public boolean validateToken(String token) {
+    public boolean validateToken(String token,String tokenType) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
                     .parseClaimsJws(token);
+
+            if (Objects.equals(tokenType, "refresh") && redisService.checkExistsValue(token)) {
+                return false;
+            }
+
             return true;
         } catch (MalformedJwtException e) {
             throw new BadRequestHandler(ErrorStatus.MALFORMED_TOKEN);
@@ -84,13 +93,14 @@ public class JwtProvider {
     }
 
     // 토큰에서 사용자 id 추출
-    public String getUserIdFromToken(String token) {
+    public String getEmailFromToken(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
+            log.info("subject: "+ claims.getSubject());
             return claims.getSubject();
         }catch (ExpiredJwtException e) {
             throw new BadRequestHandler(ErrorStatus.EXPIRED_TOKEN);
@@ -122,7 +132,7 @@ public class JwtProvider {
 
     public TokenResponseDto.RefreshTokenResponseDto recreate(User user, String refreshToken) {
         String accessToken = createAccessToken(user);
-        refreshToken = createRefreshToken();
+        refreshToken = createRefreshToken(user);
 
         redisService.setRefreshToken(user.getEmail(), refreshToken);
 

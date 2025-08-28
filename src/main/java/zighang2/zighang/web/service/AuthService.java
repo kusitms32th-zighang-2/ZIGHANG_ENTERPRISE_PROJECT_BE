@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
+import zighang2.zighang.global.payload.exception.GeneralException;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
 import zighang2.zighang.global.service.RedisService;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
@@ -37,7 +38,7 @@ public class AuthService {
                 .orElseGet(() -> createNewUser(email, nickname));
 
         String accessToken = jwtProvider.createAccessToken(user);
-        String refreshToken = jwtProvider.createRefreshToken();
+        String refreshToken = jwtProvider.createRefreshToken(user);
         redisService.setRefreshToken(user.getEmail(),refreshToken);
 
         return new TokenResponseDto.LoginTokenResponseDto(user.getId(),accessToken, refreshToken);
@@ -57,19 +58,22 @@ public class AuthService {
     }
 
     public TokenResponseDto.RefreshTokenResponseDto recreateAccessToken(String refreshToken) {
-        if (!jwtProvider.validateToken(refreshToken)) {
-            throw new IllegalArgumentException("Invalid refresh token");
+        String token = refreshToken.substring(7);
+
+        if (!jwtProvider.validateToken(token,"refresh")) {
+            throw new GeneralException(ErrorStatus.INVALID_TOKEN);
         }
 
-        String email = jwtProvider.getUserIdFromToken(refreshToken);
+        String email = jwtProvider.getEmailFromToken(token);
         User user=userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
         String savedToken = redisService.getRefreshToken(email);
-        if (savedToken == null || !savedToken.equals(refreshToken)) {
-            throw new IllegalArgumentException("Refresh token mismatch");
+
+        if (savedToken == null || !savedToken.equals(token)) {
+            throw new GeneralException(ErrorStatus.INVALID_TOKEN);
         }
 
-        return jwtProvider.recreate(user,refreshToken);
+        return jwtProvider.recreate(user,token);
     }
 }

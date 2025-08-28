@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import zighang2.zighang.global.payload.exception.GeneralException;
 
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +24,10 @@ public class RedisService {
 
     public String getRefreshToken(String key) {
         return redisTemplate.opsForValue().get(key);
+    }
+
+    public boolean checkExistsValue(String key) {
+        return redisTemplate.hasKey(key);
     }
 
     public void deleteRefreshToken(String key) {

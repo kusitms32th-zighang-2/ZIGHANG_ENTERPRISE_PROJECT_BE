@@ -91,7 +91,7 @@ public class JwtProvider {
         }
     }
 
-    // 토큰에서 사용자 id 추출
+    // 토큰에서 사용자 email 추출
     public String getEmailFromToken(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
@@ -132,10 +132,17 @@ public class JwtProvider {
 
     public TokenResponseDto.RefreshTokenResponseDto recreate(User user, String refreshToken) {
         String accessToken = createAccessToken(user);
-        refreshToken = createRefreshToken(user);
+
+        if(getExpirationTime(refreshToken) <= getExpirationTime(accessToken)) {
+            refreshToken = createRefreshToken(user);
+        }
 
         redisService.setRefreshToken(user.getId(), refreshToken);
 
-        return TokenResponseDto.RefreshTokenResponseDto.of(user.getId(),accessToken);
+        return TokenResponseDto.RefreshTokenResponseDto.of(user.getId(),accessToken,refreshToken);
+    }
+
+    public Long getExpirationTime(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getExpiration().getTime();
     }
 }

@@ -20,9 +20,10 @@ public class TokenResponseDto {
     public static class RefreshTokenResponseDto {
         private Long userId;
         private String accessToken;
+        private String refreshToken;
 
-        public static RefreshTokenResponseDto of(Long userId, String accessToken) {
-            return new RefreshTokenResponseDto(userId, accessToken);
+        public static RefreshTokenResponseDto of(Long userId, String accessToken,String refreshToken) {
+            return new RefreshTokenResponseDto(userId, accessToken,refreshToken);
         }
     }
 }

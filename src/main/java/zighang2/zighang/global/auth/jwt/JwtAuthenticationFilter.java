@@ -13,7 +13,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import zighang2.zighang.global.auth.UserPrincipal;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
-import zighang2.zighang.global.payload.exception.handler.BadRequestHandler;
+import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.dto.UserDto;
 import zighang2.zighang.web.repository.UserRepository;
@@ -33,16 +33,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String token = resolveToken(request);
-        if(StringUtils.hasText(token) && jwtProvider.validateToken(token,"access")) {
+        if(StringUtils.hasText(token) && jwtProvider.validateToken(token,"access")
+                && SecurityContextHolder.getContext().getAuthentication() == null) {
             String email = jwtProvider.getEmailFromToken(token);
 
             User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new BadRequestHandler(ErrorStatus.USER_NOT_FOUND));
+                    .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
             UserDto userDto = UserDto.of(user);
 
             UserDetails userDetails = UserPrincipal.create(userDto);
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            authentication.setDetails(new org.springframework.security.web.authentication.WebAuthenticationDetailsSource()
+                    .buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         filterChain.doFilter(request, response);

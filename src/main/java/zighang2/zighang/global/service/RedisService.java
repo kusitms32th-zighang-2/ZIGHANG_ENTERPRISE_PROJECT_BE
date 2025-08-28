@@ -13,13 +13,13 @@ public class RedisService {
     private final RedisTemplate<String, String> redisTemplate;
 
     @Value("${jwt.token.refresh-expiration-time}")
-    private long refreshExpireSeconds;
+    private long refreshTokenExpirationTime;
 
     private static final String PREFIX = "REFRESH_TOKEN:";
 
     public void setRefreshToken(Long userId, String refreshToken) {
         String key = getKey(userId);
-        redisTemplate.opsForValue().set(key, refreshToken, refreshExpireSeconds, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(key, refreshToken, refreshTokenExpirationTime, TimeUnit.MILLISECONDS);
     }
 
     public String getRefreshToken(Long userId) {

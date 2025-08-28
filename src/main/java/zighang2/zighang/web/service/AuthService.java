@@ -27,8 +27,8 @@ public class AuthService {
     private final RedisService redisService;
     private final PasswordEncoder passwordEncoder;
 
-    public TokenResponseDto.LoginTokenResponseDto oAuthLogin(String accessCode){
-        KakaoDto.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
+    public TokenResponseDto.LoginTokenResponseDto oAuthLogin(String authorizationCode){
+        KakaoDto.OAuthToken oAuthToken = kakaoUtil.requestToken(authorizationCode);
         KakaoDto.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
 
         String email = kakaoProfile.getKakao_account().getEmail();

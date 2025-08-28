@@ -4,7 +4,6 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
@@ -20,7 +19,6 @@ import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class JwtProvider {
 
     @Value("${jwt.secret-key}")
@@ -47,7 +45,7 @@ public class JwtProvider {
         Date expiration = new Date(now.getTime() + accessTokenExpirationTime);
         return Jwts.builder()
                 .setSubject(user.getEmail())
-                .claim("role", user.getUserRole())
+                .claim("role", user.getUserRole().name())
                 .setIssuedAt(now)
                 .setExpiration(expiration)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -60,6 +58,7 @@ public class JwtProvider {
         Date expiration = new Date(now.getTime() + refreshTokenExpirationTime);
         return Jwts.builder()
                 .setSubject(user.getEmail())
+                .claim("role", user.getUserRole().name())
                 .setIssuedAt(now)
                 .setExpiration(expiration)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -100,7 +99,6 @@ public class JwtProvider {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-            log.info("subject: "+ claims.getSubject());
             return claims.getSubject();
         }catch (ExpiredJwtException e) {
             throw new BadRequestHandler(ErrorStatus.EXPIRED_TOKEN);
@@ -125,8 +123,10 @@ public class JwtProvider {
                     .getBody()
                     .getExpiration();
             return expiration.before(new Date());
-        } catch (Exception e) {
+        } catch (ExpiredJwtException e) {
             return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new BadRequestHandler(ErrorStatus.INVALID_TOKEN);
         }
     }
 

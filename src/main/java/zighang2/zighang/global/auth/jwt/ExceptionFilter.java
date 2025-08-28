@@ -9,7 +9,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.GeneralException;
 
 import java.io.IOException;
@@ -26,15 +25,14 @@ public class ExceptionFilter extends OncePerRequestFilter {
         try {
             filterChain.doFilter(request, response);
         } catch (GeneralException e) {
-            setResponse(response,e.getErrorReasonHttpStatus().getCode(),e.getErrorReasonHttpStatus().getMessage());
+            setResponse(response,e.getErrorReasonHttpStatus().getHttpStatus().value(),e.getErrorReasonHttpStatus().getCode(),e.getErrorReasonHttpStatus().getMessage());
         }
     }
 
-    private void setResponse(HttpServletResponse response, String code, String message) throws IOException {
+    private void setResponse(HttpServletResponse response, int status, String code, String message) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
-        response.setStatus(ErrorStatus._FORBIDDEN.getHttpStatus().value());
+        response.setStatus(status);
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(Map.of(
                 "isSuccess", false,
                 "code", code,

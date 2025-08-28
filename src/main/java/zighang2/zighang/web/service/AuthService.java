@@ -32,31 +32,31 @@ public class AuthService {
         KakaoDto.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
 
         String email = kakaoProfile.getKakao_account().getEmail();
-        String nickname = kakaoProfile.getProperties().getNickname();
+        String name = kakaoProfile.getProperties().getNickname();
 
         User user = userRepository.findByEmail(email)
-                .orElseGet(() -> createNewUser(email, nickname));
+                .orElseGet(() -> createNewUser(email, name));
 
         String accessToken = jwtProvider.createAccessToken(user);
         String refreshToken = jwtProvider.createRefreshToken(user);
-        redisService.setRefreshToken(user.getEmail(),refreshToken);
+        redisService.setRefreshToken(user.getId(), refreshToken);
 
         return new TokenResponseDto.LoginTokenResponseDto(user.getId(),accessToken, refreshToken);
     }
 
-    private User createNewUser(String email, String kakaoNickname) {
+    private User createNewUser(String email, String name) {
         String rawPassword = UUID.randomUUID().toString();
-        String uniqueNickname = kakaoNickname + "_" + UUID.randomUUID().toString().substring(0, 8);
+        String uniqueNickname = UUID.randomUUID().toString().substring(0, 8);
 
-        return userRepository.save(
-                User.builder()
-                        .email(email)
-                        .name(kakaoNickname)
-                        .nickname(uniqueNickname)
-                        .password(passwordEncoder.encode(rawPassword))
-                        .userRole(UserRole.GENERAL)
-                        .build()
-        );
+        User user =User.builder()
+                .email(email)
+                .name(name)
+                .nickname(uniqueNickname)
+                .password(passwordEncoder.encode(rawPassword))
+                .userRole(UserRole.GENERAL)
+                .build();
+
+        return userRepository.save(user);
     }
 
     public TokenResponseDto.RefreshTokenResponseDto recreateAccessToken(String refreshToken) {
@@ -70,7 +70,7 @@ public class AuthService {
         User user=userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
-        String savedToken = redisService.getRefreshToken(email);
+        String savedToken = redisService.getRefreshToken(user.getId());
 
         if (savedToken == null || !savedToken.equals(token)) {
             throw new GeneralException(ErrorStatus.INVALID_TOKEN);

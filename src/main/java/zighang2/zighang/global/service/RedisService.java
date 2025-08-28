@@ -15,12 +15,15 @@ public class RedisService {
     @Value("${jwt.token.refresh-expiration-time}")
     private long refreshExpireSeconds;
 
-    public void setRefreshToken(String key, String refreshToken) {
-        redisTemplate.opsForValue()
-                .set(key, refreshToken, refreshExpireSeconds, TimeUnit.SECONDS);
+    private static final String PREFIX = "REFRESH_TOKEN:";
+
+    public void setRefreshToken(Long userId, String refreshToken) {
+        String key = getKey(userId);
+        redisTemplate.opsForValue().set(key, refreshToken, refreshExpireSeconds, TimeUnit.SECONDS);
     }
 
-    public String getRefreshToken(String key) {
+    public String getRefreshToken(Long userId) {
+        String key = getKey(userId);
         return redisTemplate.opsForValue().get(key);
     }
 
@@ -28,7 +31,12 @@ public class RedisService {
         return redisTemplate.hasKey(key);
     }
 
-    public void deleteRefreshToken(String key) {
+    public void deleteRefreshToken(Long userId) {
+        String key = getKey(userId);
         redisTemplate.delete(key);
+    }
+
+    private String getKey(Long userId) {
+        return PREFIX + userId;
     }
 }

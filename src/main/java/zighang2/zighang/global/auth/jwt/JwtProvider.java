@@ -134,7 +134,7 @@ public class JwtProvider {
         String accessToken = createAccessToken(user);
         refreshToken = createRefreshToken(user);
 
-        redisService.setRefreshToken(user.getEmail(), refreshToken);
+        redisService.setRefreshToken(user.getId(), refreshToken);
 
         return TokenResponseDto.RefreshTokenResponseDto.of(user.getId(),accessToken);
     }

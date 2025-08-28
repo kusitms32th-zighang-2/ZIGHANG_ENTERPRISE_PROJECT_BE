@@ -7,7 +7,7 @@ import zighang2.zighang.global.common.BaseEntity;
 @Entity
 @Getter
 @Builder
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class User extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -20,8 +20,8 @@ public class RestTemplateConfig {
         factory.setReadTimeout(5_000);
         restTemplate.setRequestFactory(factory);
 
-        List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
-        messageConverters.add(new FormHttpMessageConverter());
+        List<HttpMessageConverter<?>> messageConverters = new ArrayList<>(restTemplate.getMessageConverters());
+        messageConverters.add(0, new FormHttpMessageConverter());
         restTemplate.setMessageConverters(messageConverters);
 
         return restTemplate;

@@ -44,13 +44,15 @@ public class AuthService {
         return new TokenResponseDto.LoginTokenResponseDto(user.getId(),accessToken, refreshToken);
     }
 
-    private User createNewUser(String email, String nickname) {
+    private User createNewUser(String email, String kakaoNickname) {
         String rawPassword = UUID.randomUUID().toString();
+        String uniqueNickname = kakaoNickname + "_" + UUID.randomUUID().toString().substring(0, 8);
+
         return userRepository.save(
                 User.builder()
                         .email(email)
-                        .name(nickname)
-                        .nickname(nickname)
+                        .name(kakaoNickname)
+                        .nickname(uniqueNickname)
                         .password(passwordEncoder.encode(rawPassword))
                         .userRole(UserRole.GENERAL)
                         .build()

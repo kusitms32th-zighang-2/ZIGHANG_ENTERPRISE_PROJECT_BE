@@ -74,5 +74,5 @@ jobs:
             docker pull ${{ secrets.NCP_CONTAINER_REGISTRY }}/express2:${{ github.sha }}
             docker stop app || true
             docker rm app || true
-            docker run -d -p 8080:8080 --name app ${{ secrets.NCP_CONTAINER_REGISTRY }}/express2:${{ github.sha }}
+            docker run -d -p 8080:8080 --name app --add-host=host.docker.internal:host-gateway ${{ secrets.NCP_CONTAINER_REGISTRY }}/express2:${{ github.sha }}
             docker image prune -f

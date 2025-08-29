@@ -16,12 +16,12 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
 
-    public UserDto.userModifyDto modifyUserInfo(UserDto.userModifyDto userModifyDto) {
+    public UserDto.UserModifyDto modifyUserInfo(UserDto.UserModifyDto userModifyDto) {
         Long userId = jwtProvider.getCurrentUserId();
 
         User user = userRepository.findById(userId).orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
 
-        user.updateUsersInfo(userModifyDto.getUserRole(), userModifyDto.getJobGroup(), userModifyDto.getCompanySize(), userModifyDto.getEduation(), userModifyDto.getReceivingEmail(), userModifyDto.getWorkExperience());
+        user.updateUsersInfo(userModifyDto.getJobGroup(), userModifyDto.getCompanySize(), userModifyDto.getEducation(), userModifyDto.getReceivingEmail(), userModifyDto.getWorkExperience());
         userRepository.save(user);
 
         User updatedUser = userRepository.findById(userId).orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));

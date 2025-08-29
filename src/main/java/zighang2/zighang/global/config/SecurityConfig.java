@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login","/auth/login/kakao/**", "/auth/**", "/auth/refresh-token","/error").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-resources/**","/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/user").authenticated()
+                        .requestMatchers("/users").authenticated()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

@@ -36,7 +36,7 @@ public class User extends BaseEntity {
     private String companySize;
 
     @Column(length = 50)
-    private String eduation;
+    private String education;
 
     @Column(length = 50)
     private String workExperience;
@@ -44,13 +44,12 @@ public class User extends BaseEntity {
     @Column(length = 50)
     private String receivingEmail;
 
-    public void updateUsersInfo(UserRole userRole, String jobGroup, String companySize, String eduation, String workExperience, String receivingEmail) {
-        if (userRole != null) this.userRole = userRole;
-        if (jobGroup != null) this.jobGroup = jobGroup;
-        if (companySize != null) this.companySize = companySize;
-        if (eduation != null) this.eduation = eduation;
-        if (workExperience != null) this.workExperience = workExperience;
-        if (receivingEmail != null) this.receivingEmail = receivingEmail;
+    public void updateUsersInfo(String jobGroup, String companySize, String eduation, String workExperience, String receivingEmail) {
+        if (jobGroup != null) this.jobGroup = jobGroup.trim();
+        if (companySize != null) this.companySize = companySize.trim();
+        if (eduation != null) this.education = eduation.trim();
+        if (workExperience != null) this.workExperience = workExperience.trim();
+        if (receivingEmail != null) this.receivingEmail = receivingEmail.trim();
     }
 
 }

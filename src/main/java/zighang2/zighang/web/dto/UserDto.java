@@ -1,15 +1,17 @@
 package zighang2.zighang.web.dto;
 
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.domain.user.UserRole;
+    import static lombok.AccessLevel.PROTECTED;
 
 @Getter
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor(access = PROTECTED)
 public class UserDto {
     private Long id;
     private String email;
@@ -20,23 +22,21 @@ public class UserDto {
     @Getter
     @Builder
     @AllArgsConstructor
-    public static class userModifyDto {
+    public static class UserModifyDto {
         private UserRole userRole;
         private String jobGroup;
         private String companySize;
-        private String eduation;
+        private String education;
         private String workExperience;
         private String receivingEmail;
 
-
-        public UserDto.userModifyDto of(User user) {
-            return userModifyDto.builder()
+        public UserModifyDto of(User user) {
+            return UserModifyDto.builder()
                     .companySize(user.getCompanySize())
-                    .userRole(userRole)
-                    .jobGroup(jobGroup)
-                    .eduation(eduation)
-                    .workExperience(workExperience)
-                    .receivingEmail(receivingEmail)
+                    .jobGroup(user.getJobGroup())
+                    .education(user.getEducation())
+                    .workExperience(user.getWorkExperience())
+                    .receivingEmail(user.getReceivingEmail())
                     .build();
 
         }

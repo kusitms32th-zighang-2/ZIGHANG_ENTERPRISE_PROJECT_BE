@@ -23,7 +23,6 @@ public class UserDto {
     @Builder
     @AllArgsConstructor
     public static class UserModifyDto {
-        private UserRole userRole;
         private String jobGroup;
         private String companySize;
         private String education;

@@ -24,8 +24,6 @@ public class UserService {
         user.updateUsersInfo(userModifyDto.getJobGroup(), userModifyDto.getCompanySize(), userModifyDto.getEducation(), userModifyDto.getReceivingEmail(), userModifyDto.getWorkExperience());
         userRepository.save(user);
 
-        User updatedUser = userRepository.findById(userId).orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
-
-        return userModifyDto.of(updatedUser);
+        return userModifyDto.of(user);
     }
 }

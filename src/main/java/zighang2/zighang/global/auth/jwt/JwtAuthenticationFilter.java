@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = jwtProvider.resolveToken(request);
 
         if (redisService.isBlackListed(token)){
-            throw new GeneralException(ErrorStatus._UNAUTHORIZED);
+            throw new GeneralException(ErrorStatus.BLOCKED_TOKEN);
         }
 
         if(StringUtils.hasText(token) && jwtProvider.validateToken(token,"access")

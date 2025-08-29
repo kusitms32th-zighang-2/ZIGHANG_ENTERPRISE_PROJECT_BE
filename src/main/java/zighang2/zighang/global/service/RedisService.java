@@ -20,6 +20,7 @@ public class RedisService {
     private long accessExpirationTime;
 
     private static final String PREFIX = "REFRESH_TOKEN:";
+    private static final String BLACKLIST_PREFIX = "BLACKLIST:";
 
     public void setRefreshToken(Long userId, String refreshToken) {
         String key = getKey(userId);
@@ -45,10 +46,10 @@ public class RedisService {
     }
 
     public boolean isBlackListed(String token){
-        return Boolean.TRUE.equals(redisTemplate.hasKey("BLACKLIST:"+token));
+        return Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX+token));
     }
 
     public void addToBlackList(String token, String reason) {
-        redisTemplate.opsForValue().set("BLACKLIST:" + token, reason, accessExpirationTime, TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set(BLACKLIST_PREFIX + token, reason, accessExpirationTime, TimeUnit.MILLISECONDS);
     }
 }

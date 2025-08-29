@@ -13,7 +13,7 @@ public class UserController {
     private final UserService userService;
 
     @PatchMapping("")
-    ApiResponse<?> modifyUsersInfo(@RequestBody UserDto.UserModifyDto userModifyDto) {
+    ApiResponse<UserDto.UserModifyDto> modifyUsersInfo(@RequestBody UserDto.UserModifyDto userModifyDto) {
         return ApiResponse.onSuccess(userService.modifyUserInfo(userModifyDto));
     }
 }

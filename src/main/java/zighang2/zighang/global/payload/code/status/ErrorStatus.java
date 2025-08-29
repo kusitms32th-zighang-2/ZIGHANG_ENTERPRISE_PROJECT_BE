@@ -31,7 +31,7 @@ public enum ErrorStatus implements BaseErrorCode {
     EMPTY_CLAIMS(HttpStatus.BAD_REQUEST, "TOKEN4003", "클레임이 비어있습니다."),
     EMPTY_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN4004", "비어있는 토큰입니다."),
     TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "TOKEN4040", "토큰을 찾을 수 없습니다."),
-    BLOCKED_TOKEN(HttpStatus.FORBIDDEN, "TOKEN4019", "차단된 사용자의 토큰입니다."),
+    BLOCKED_TOKEN(HttpStatus.FORBIDDEN, "TOKEN4019", "블랙리스트에 등록된 토큰입니다"),
 
     ;
 

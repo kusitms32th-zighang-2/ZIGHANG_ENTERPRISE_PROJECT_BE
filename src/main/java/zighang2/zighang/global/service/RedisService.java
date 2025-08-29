@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -15,7 +16,11 @@ public class RedisService {
     @Value("${jwt.token.refresh-expiration-time}")
     private long refreshTokenExpirationTime;
 
+    @Value("${jwt.token.access-expiration-time}")
+    private long accessExpirationTime;
+
     private static final String PREFIX = "REFRESH_TOKEN:";
+    private static final String BLACKLIST_PREFIX = "BLACKLIST:";
 
     public void setRefreshToken(Long userId, String refreshToken) {
         String key = getKey(userId);
@@ -28,7 +33,7 @@ public class RedisService {
     }
 
     public boolean checkExistsValue(String key) {
-        return redisTemplate.hasKey(key);
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
 
     public void deleteRefreshToken(Long userId) {
@@ -38,5 +43,13 @@ public class RedisService {
 
     private String getKey(Long userId) {
         return PREFIX + userId;
+    }
+
+    public boolean isBlackListed(String token){
+        return Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX+token));
+    }
+
+    public void addToBlackList(String token, String reason) {
+        redisTemplate.opsForValue().set(BLACKLIST_PREFIX + token, reason, accessExpirationTime, TimeUnit.MILLISECONDS);
     }
 }

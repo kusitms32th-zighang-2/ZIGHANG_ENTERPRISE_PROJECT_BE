@@ -79,4 +79,11 @@ public class AuthService {
 
         return jwtProvider.recreate(user,token);
     }
+
+    public void logoutUser(String token){
+        Long userId = jwtProvider.getCurrentUserId();
+
+        redisService.addToBlackList(token,"logout");
+        redisService.deleteRefreshToken(userId);
+    }
 }

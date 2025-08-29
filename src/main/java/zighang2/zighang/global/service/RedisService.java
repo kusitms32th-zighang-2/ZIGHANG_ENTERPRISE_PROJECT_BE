@@ -32,7 +32,7 @@ public class RedisService {
     }
 
     public boolean checkExistsValue(String key) {
-        return redisTemplate.hasKey(key);
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
 
     public void deleteRefreshToken(Long userId) {

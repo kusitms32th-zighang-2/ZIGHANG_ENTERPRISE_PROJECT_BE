@@ -1,5 +1,6 @@
 package zighang2.zighang.web.dto;
 
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,6 +15,32 @@ public class UserDto {
     private String email;
     private String nickname;
     private UserRole role;
+
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class userModifyDto {
+        private UserRole userRole;
+        private String jobGroup;
+        private String companySize;
+        private String eduation;
+        private String workExperience;
+        private String receivingEmail;
+
+
+        public UserDto.userModifyDto of(User user) {
+            return userModifyDto.builder()
+                    .companySize(user.getCompanySize())
+                    .userRole(userRole)
+                    .jobGroup(jobGroup)
+                    .eduation(eduation)
+                    .workExperience(workExperience)
+                    .receivingEmail(receivingEmail)
+                    .build();
+
+        }
+    }
 
     public static UserDto of(User user) {
         return UserDto.builder()

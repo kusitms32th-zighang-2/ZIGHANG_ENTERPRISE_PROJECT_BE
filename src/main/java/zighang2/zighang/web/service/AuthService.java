@@ -66,8 +66,9 @@ public class AuthService {
             throw new GeneralException(ErrorStatus.INVALID_TOKEN);
         }
 
-        String email = jwtProvider.getEmailFromToken(token);
-        User user=userRepository.findByEmail(email)
+        Long userId = jwtProvider.getUserIdFromToken(token);
+
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
         String savedToken = redisService.getRefreshToken(user.getId());

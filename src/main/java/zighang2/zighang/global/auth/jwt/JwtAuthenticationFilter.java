@@ -32,12 +32,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String token = resolveToken(request);
+        String token = jwtProvider.resolveToken(request);
         if(StringUtils.hasText(token) && jwtProvider.validateToken(token,"access")
                 && SecurityContextHolder.getContext().getAuthentication() == null) {
-            String email = jwtProvider.getEmailFromToken(token);
+            Long userId = jwtProvider.getUserIdFromToken(token);
 
-            User user = userRepository.findByEmail(email)
+            User user = userRepository.findById(userId)
                     .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
             UserDto userDto = UserDto.of(user);
@@ -51,12 +51,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
-    }
+
 
 }

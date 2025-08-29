@@ -3,11 +3,17 @@ package zighang2.zighang.global.auth.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import zighang2.zighang.global.auth.UserPrincipal;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
+import zighang2.zighang.global.payload.exception.GeneralException;
 import zighang2.zighang.global.payload.exception.handler.BadRequestHandler;
+import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
 import zighang2.zighang.global.service.RedisService;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.dto.TokenResponseDto;
@@ -44,7 +50,7 @@ public class JwtProvider {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + accessTokenExpirationTime);
         return Jwts.builder()
-                .setSubject(user.getEmail())
+                .setSubject(String.valueOf(user.getId()))
                 .claim("role", user.getUserRole().name())
                 .setIssuedAt(now)
                 .setExpiration(expiration)
@@ -57,7 +63,7 @@ public class JwtProvider {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + refreshTokenExpirationTime);
         return Jwts.builder()
-                .setSubject(user.getEmail())
+                .setSubject(String.valueOf(user.getId()))
                 .claim("role", user.getUserRole().name())
                 .setIssuedAt(now)
                 .setExpiration(expiration)
@@ -91,26 +97,24 @@ public class JwtProvider {
         }
     }
 
-    // 토큰에서 사용자 email 추출
-    public String getEmailFromToken(String token) {
-        try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-            return claims.getSubject();
-        }catch (ExpiredJwtException e) {
-            throw new BadRequestHandler(ErrorStatus.EXPIRED_TOKEN);
-        } catch (MalformedJwtException e) {
-            throw new BadRequestHandler(ErrorStatus.MALFORMED_TOKEN);
-        } catch (UnsupportedJwtException e) {
-            throw new BadRequestHandler(ErrorStatus.UNSUPPORTED_TOKEN);
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestHandler(ErrorStatus.EMPTY_CLAIMS);
-        } catch (JwtException e) {
-            throw new BadRequestHandler(ErrorStatus.INVALID_TOKEN);
+    public Long getUserIdFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return Long.parseLong(claims.getSubject());
+    }
+
+    // 토큰에서 userId 뽑는 메소드
+    public Long getCurrentUserId() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof UserPrincipal userPrincipal) {
+            return userPrincipal.getId();
         }
+
+        throw new NotFoundHandler(ErrorStatus.USER_NOT_FOUND);
     }
 
     // 토큰 만료 확인
@@ -144,5 +148,13 @@ public class JwtProvider {
 
     public Long getExpirationTime(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getExpiration().getTime();
+    }
+
+    public String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }

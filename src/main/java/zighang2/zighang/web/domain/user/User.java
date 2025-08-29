@@ -11,6 +11,7 @@ import zighang2.zighang.global.common.BaseEntity;
 @AllArgsConstructor
 public class User extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
     @Setter
@@ -27,5 +28,29 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
+
+    @Column(length = 50)
+    private String jobGroup;
+
+    @Column(length = 50)
+    private String companySize;
+
+    @Column(length = 50)
+    private String eduation;
+
+    @Column(length = 50)
+    private String workExperience;
+
+    @Column(length = 50)
+    private String receivingEmail;
+
+    public void updateUsersInfo(UserRole userRole, String jobGroup, String companySize, String eduation, String workExperience, String receivingEmail) {
+        if (userRole != null) this.userRole = userRole;
+        if (jobGroup != null) this.jobGroup = jobGroup;
+        if (companySize != null) this.companySize = companySize;
+        if (eduation != null) this.eduation = eduation;
+        if (workExperience != null) this.workExperience = workExperience;
+        if (receivingEmail != null) this.receivingEmail = receivingEmail;
+    }
 
 }

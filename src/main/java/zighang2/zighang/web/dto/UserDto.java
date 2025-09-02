@@ -18,19 +18,28 @@ public class UserDto {
     private String nickname;
     private UserRole role;
 
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class myPageDto{
+        private Long id;
+        private String email;
+        private String name;
+        private UserDto.mypageModifyDto myPageModifyDto;
+    }
 
     @Getter
     @Builder
     @AllArgsConstructor
-    public static class UserModifyDto {
+    public static class mypageModifyDto {
         private String jobGroup;
         private String companySize;
         private String education;
         private String workExperience;
         private String receivingEmail;
 
-        public UserModifyDto of(User user) {
-            return UserModifyDto.builder()
+        public static mypageModifyDto of(User user) {
+            return mypageModifyDto.builder()
                     .companySize(user.getCompanySize())
                     .jobGroup(user.getJobGroup())
                     .education(user.getEducation())

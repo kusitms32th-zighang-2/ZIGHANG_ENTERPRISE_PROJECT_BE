@@ -12,8 +12,13 @@ import zighang2.zighang.web.service.UserService;
 public class UserController {
     private final UserService userService;
 
-    @PatchMapping("")
-    ApiResponse<UserDto.UserModifyDto> modifyUsersInfo(@RequestBody UserDto.UserModifyDto userModifyDto) {
-        return ApiResponse.onSuccess(userService.modifyUserInfo(userModifyDto));
+    @PatchMapping("/my-page")
+    public ApiResponse<UserDto.mypageModifyDto> modifyUsersInfo(@RequestBody UserDto.mypageModifyDto mypageDto) {
+        return ApiResponse.onSuccess(userService.modifyUserInfo(mypageDto));
+    }
+
+    @GetMapping("/my-page")
+    public ApiResponse<UserDto.myPageDto> getUsersInfo() {
+        return ApiResponse.onSuccess(userService.getUserInfo());
     }
 }

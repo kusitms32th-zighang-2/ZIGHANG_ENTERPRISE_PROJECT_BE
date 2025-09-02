@@ -16,14 +16,28 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
 
-    public UserDto.UserModifyDto modifyUserInfo(UserDto.UserModifyDto userModifyDto) {
+    public UserDto.mypageModifyDto modifyUserInfo(UserDto.mypageModifyDto mypageModifyDto) {
         Long userId = jwtProvider.getCurrentUserId();
 
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
-        user.updateUsersInfo(userModifyDto.getJobGroup(), userModifyDto.getCompanySize(), userModifyDto.getEducation(), userModifyDto.getReceivingEmail(), userModifyDto.getWorkExperience());
+        user.updateUsersInfo(mypageModifyDto.getJobGroup(), mypageModifyDto.getCompanySize(), mypageModifyDto.getEducation(), mypageModifyDto.getReceivingEmail(), mypageModifyDto.getWorkExperience());
         userRepository.save(user);
 
-        return userModifyDto.of(user);
+        return mypageModifyDto.of(user);
+    }
+
+    public UserDto.myPageDto getUserInfo() {
+        Long userId = jwtProvider.getCurrentUserId();
+        User user = userRepository.findById(userId).
+                orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
+
+        return UserDto.myPageDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .myPageModifyDto(UserDto.mypageModifyDto.of(user))
+                .build();
+
     }
 }

@@ -21,25 +21,26 @@ public class UserDto {
     @Getter
     @Builder
     @AllArgsConstructor
-    public static class myPageDto{
+    public static class MyPageDto {
         private Long id;
         private String email;
         private String name;
-        private UserDto.mypageModifyDto myPageModifyDto;
+        private MypageModifyDto myPageModifyDto;
     }
 
     @Getter
     @Builder
     @AllArgsConstructor
-    public static class mypageModifyDto {
+    @NoArgsConstructor(access = PROTECTED)
+    public static class MypageModifyDto {
         private String jobGroup;
         private String companySize;
         private String education;
         private String workExperience;
         private String receivingEmail;
 
-        public static mypageModifyDto of(User user) {
-            return mypageModifyDto.builder()
+        public static MypageModifyDto of(User user) {
+            return MypageModifyDto.builder()
                     .companySize(user.getCompanySize())
                     .jobGroup(user.getJobGroup())
                     .education(user.getEducation())

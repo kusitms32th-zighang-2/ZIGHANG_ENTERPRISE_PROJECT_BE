@@ -2,6 +2,7 @@ package zighang2.zighang.web.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
@@ -16,27 +17,33 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
 
-    public UserDto.mypageModifyDto modifyUserInfo(UserDto.mypageModifyDto mypageModifyDto) {
+    @Transactional
+    public UserDto.MypageModifyDto modifyUserInfo(UserDto.MypageModifyDto mypageModifyDto) {
         Long userId = jwtProvider.getCurrentUserId();
 
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
-        user.updateUsersInfo(mypageModifyDto.getJobGroup(), mypageModifyDto.getCompanySize(), mypageModifyDto.getEducation(), mypageModifyDto.getReceivingEmail(), mypageModifyDto.getWorkExperience());
+        user.updateUsersInfo(
+                mypageModifyDto.getJobGroup(),
+                mypageModifyDto.getCompanySize(),
+                mypageModifyDto.getEducation(),
+                mypageModifyDto.getWorkExperience(),
+                mypageModifyDto.getReceivingEmail());
         userRepository.save(user);
 
         return mypageModifyDto.of(user);
     }
 
-    public UserDto.myPageDto getUserInfo() {
+    public UserDto.MyPageDto getMypage() {
         Long userId = jwtProvider.getCurrentUserId();
         User user = userRepository.findById(userId).
                 orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
-        return UserDto.myPageDto.builder()
+        return UserDto.MyPageDto.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
-                .myPageModifyDto(UserDto.mypageModifyDto.of(user))
+                .myPageModifyDto(UserDto.MypageModifyDto.of(user))
                 .build();
 
     }

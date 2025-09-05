@@ -3,6 +3,7 @@ package zighang2.zighang.web.domain.user;
 import jakarta.persistence.*;
 import lombok.*;
 import zighang2.zighang.global.common.BaseEntity;
+import zighang2.zighang.web.domain.user.enums.UserRole;
 
 @Entity
 @Getter
@@ -26,11 +27,22 @@ public class User extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String nickname;
 
+    @Column(nullable = false)
+    private String address;
+
+    @Enumerated(EnumType.STRING)
+    private Transport transport;
+
+    private int maxCommuteMinutes;
+
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
-    @Column(length = 50)
-    private String jobGroup;
+    @Enumerated(EnumType.STRING)
+    private JobGroup jobGroup;
+
+    @Enumerated(EnumType.STRING)
+    private JobPosition jobPosition;
 
     @Column(length = 50)
     private String companySize;
@@ -44,8 +56,8 @@ public class User extends BaseEntity {
     @Column(length = 50)
     private String receivingEmail;
 
-    public void updateUsersInfo(String jobGroup, String companySize, String eduation, String workExperience, String receivingEmail) {
-        if (jobGroup != null) this.jobGroup = jobGroup.trim();
+    public void updateUsersInfo(JobGroup jobGroup, String companySize, String eduation, String workExperience, String receivingEmail) {
+        if (jobGroup != null) this.jobGroup = jobGroup;
         if (companySize != null) this.companySize = companySize.trim();
         if (eduation != null) this.education = eduation.trim();
         if (workExperience != null) this.workExperience = workExperience.trim();

@@ -1,4 +1,4 @@
-package zighang2.zighang.web.dto;
+package zighang2.zighang.web.dto.tmap.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,9 +33,14 @@ public class TmapGeocodingResponseDto {
     @AllArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Coordinate {
-        @JsonProperty("lat")
+        @JsonProperty("newLat")
         private String lat;
-        @JsonProperty("lon")
+        @JsonProperty("newLon")
         private String lon;
+        @JsonProperty("newLatEntr")
+        private String latEntr;
+        @JsonProperty("newlLonEntr")
+        private String lonEntr;
+
     }
 }

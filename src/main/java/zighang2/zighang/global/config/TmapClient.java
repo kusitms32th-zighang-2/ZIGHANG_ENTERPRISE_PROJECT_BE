@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import zighang2.zighang.web.dto.GeocodePoint;
-import zighang2.zighang.web.dto.TmapGeocodingResponseDto;
-import zighang2.zighang.web.dto.TmapResponseDto;
+import zighang2.zighang.web.dto.tmap.GeocodePoint;
+import zighang2.zighang.web.dto.tmap.response.TmapGeocodingResponseDto;
+import zighang2.zighang.web.dto.tmap.response.TmapResponseDto;
 
 import java.util.*;
 
@@ -19,17 +19,11 @@ public class TmapClient {
 
     private final WebClient tmapWebClient;
 
-    @Value("${tmap.base-url}")
-    private String baseUrl;
-
-    @Value("${tmap.api-key}")
-    private String apiKey;
-
     @Value("${tmap.coord-type}")
     private String coordType;
 
     //지오코딩(주소 -> 좌표)
-    public Mono<GeocodePoint> geocodeAddress(String address) {
+    public GeocodePoint geocodeAddress(String address) {
 
         return tmapWebClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -43,20 +37,39 @@ public class TmapClient {
                         .queryParam("count", 20)
                         .build())
                 .retrieve()
+                .onStatus(s -> s.is4xxClientError() || s.is5xxServerError(),
+                        resp -> resp.bodyToMono(String.class).defaultIfEmpty("")
+                                .map(body -> new IllegalStateException(
+                                        "Tmap geocoding 실패 (" + resp.statusCode() + "): " + body)))
                 .bodyToMono(TmapGeocodingResponseDto.class)
-                .flatMap(dto -> {
-                    var coords = dto.getCoordinateInfo().getCoordinate();
-                    if (coords != null && !coords.isEmpty()) {
-                        var c = coords.get(0);
-                        return Mono.just(new GeocodePoint(Double.parseDouble(c.getLat()), Double.parseDouble(c.getLon())));
-                    } else {
-                        return Mono.error(new RuntimeException("좌표를 찾을 수 없습니다."));
+                .map(dto -> {
+                    if (dto == null
+                            || dto.getCoordinateInfo() == null
+                            || dto.getCoordinateInfo().getCoordinate() == null) {
+                        log.error("지오코딩 응답이 null입니다. 주소: {}", address);
+                        throw new IllegalStateException("지오코딩 응답이 비어 있습니다.");
                     }
-                });
+                    var c = dto.getCoordinateInfo().getCoordinate().get(0);
+
+                    String lat= c.getLat();
+                    String lon= c.getLon();
+                    if (lat == null || lat.isBlank() || lon == null || lon.isBlank()) {
+                        String latEntr = c.getLatEntr();
+                        String lonEntr = c.getLonEntr();
+                        if (latEntr != null && !latEntr.isBlank() && lonEntr != null && !lonEntr.isBlank()) {
+                            log.info("지오코딩된 주소(입구점 좌표): "+latEntr+lonEntr);
+                            return new GeocodePoint(Double.parseDouble(c.getLat()), Double.parseDouble(c.getLon()));
+                        } else {
+                            throw new IllegalStateException("좌표를 찾을 수 없습니다.");
+                        }
+                    }
+                    return new GeocodePoint(Double.parseDouble(lat), Double.parseDouble(lon));
+                })
+                .block();
     }
 
     //자동차 경로 시간 계산
-    public Mono<Integer> getDrivingDurationSeconds(GeocodePoint start, GeocodePoint end){
+    public Integer getDrivingDurationSeconds(GeocodePoint start, GeocodePoint end){
         Map<String, Object> body = new HashMap<>();
         body.put("startX", start.lonAsString());
         body.put("startY", start.latAsString());
@@ -72,12 +85,13 @@ public class TmapClient {
                 .bodyValue(body)
                 .retrieve()
                 .bodyToMono(TmapResponseDto.TmapRouteResDto.class)
-                .map(this::extractCarDurationSeconds);
+                .map(this::extractCarDurationSeconds)
+                .block();
 
     }
 
     //대중교통 경로 시간 계산
-    public Mono<Integer> getTransitDurationSeconds(GeocodePoint start, GeocodePoint end){
+    public Integer getTransitDurationSeconds(GeocodePoint start, GeocodePoint end){
         Map<String, Object> body = new HashMap<>();
         body.put("startX", start.lonAsString());
         body.put("startY", start.latAsString());
@@ -90,7 +104,8 @@ public class TmapClient {
                 .bodyValue(body)
                 .retrieve()
                 .bodyToMono(TmapResponseDto.TmapTransitResDto.class)
-                .map(this::extractTransitDurationSeconds);
+                .map(this::extractTransitDurationSeconds)
+                .block();
     }
 
 
@@ -121,6 +136,5 @@ public class TmapClient {
                 .min(Comparator.naturalOrder())
                 .orElseThrow(() -> new IllegalStateException("대중교통 요약 응답에서 totalTime을 찾지 못했습니다."));
     }
-
 
 }

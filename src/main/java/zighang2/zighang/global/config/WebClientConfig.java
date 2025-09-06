@@ -8,20 +8,23 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunctions;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
+import java.time.Duration;
+
 @Configuration
 public class WebClientConfig {
     @Value("${tmap.base-url}")
     private String tmapBaseUrl;
 
-    @Value("${tmap.api-key}")
-    private String apiKey;
+    @Value("${tmap.appKey}")
+    private String appKey;
 
     @Bean
     public WebClient tmapWebClient() {
-        HttpClient httpClient = HttpClient.create();
+        HttpClient httpClient = HttpClient.create()
+                .responseTimeout(Duration.ofSeconds(3));
         return WebClient.builder()
                 .baseUrl(tmapBaseUrl)
-                .defaultHeader("apiKey", apiKey)
+                .defaultHeader("appKey", appKey)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .build();
     }

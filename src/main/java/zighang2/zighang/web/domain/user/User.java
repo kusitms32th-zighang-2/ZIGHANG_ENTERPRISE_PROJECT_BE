@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import zighang2.zighang.global.common.BaseEntity;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Builder
@@ -43,6 +45,13 @@ public class User extends BaseEntity {
 
     @Column(length = 50)
     private String receivingEmail;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<JobGroup> jobs;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "character_id")
+    private OnboardingCharacter character;
 
     public void updateUsersInfo(String jobGroup, String companySize, String eduation, String workExperience, String receivingEmail) {
         if (jobGroup != null) this.jobGroup = jobGroup.trim();

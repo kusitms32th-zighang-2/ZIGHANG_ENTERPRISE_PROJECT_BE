@@ -23,7 +23,7 @@ public enum ErrorStatus implements BaseErrorCode {
     EMAIL_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "USER_1004", "이미 존재하는 이메일 입니다."),
     INVALID_VALUE(HttpStatus.BAD_REQUEST, "USER1005", "유효하지 않은 입력값입니다."),
 
-    //인증 관련 에러
+    //인증 관련 에러 4000
     MALFORMED_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN4001", "잘못된 형식의 토큰입니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "TOKEN4010", "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "TOKEN4011", "만료된 토큰입니다."),
@@ -33,6 +33,8 @@ public enum ErrorStatus implements BaseErrorCode {
     TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "TOKEN4040", "토큰을 찾을 수 없습니다."),
     BLOCKED_TOKEN(HttpStatus.FORBIDDEN, "TOKEN4019", "블랙리스트에 등록된 토큰입니다"),
 
+    // 온보딩 관련 에러 5000
+    CHARACTER_NOT_FOUND(HttpStatus.BAD_REQUEST, "ONBOARDING_5001", "해당하는 캐릭터가 존재하지 않습니다.")
     ;
 
 

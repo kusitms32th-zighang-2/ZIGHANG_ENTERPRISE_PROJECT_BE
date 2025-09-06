@@ -1,8 +1,5 @@
 package zighang2.zighang.global.config;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -28,9 +25,26 @@ public class TmapClient {
     @Value("${tmap.coord-type}")
     private String coordType;
 
-    //지오코딩(주소 -> 좌표)
+    // 지오코딩(주소 -> 좌표)
     public GeocodePoint geocodeAddress(String address) {
+        TmapGeocodingResponseDto response = callGeocodingApi(address);
+        return parseGeocodeResponse(response);
+    }
 
+    // 자동차 경로 시간 계산
+    public Integer getDrivingDurationSeconds(GeocodePoint start, GeocodePoint end) {
+        TmapResponseDto.TmapRouteResDto response = callDrivingRouteApi(start, end);
+        return extractCarDurationSeconds(response);
+    }
+
+    // 대중교통 경로 시간 계산
+    public Integer getTransitDurationSeconds(GeocodePoint start, GeocodePoint end, int maxCommuteMinutes) {
+        TmapResponseDto.TmapTransitResDto response = callTransitRouteApi(start, end, maxCommuteMinutes);
+        return extractTransitDurationSeconds(response);
+    }
+
+    //fullText geocoding api
+    private TmapGeocodingResponseDto callGeocodingApi(String address) {
         return tmapWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("tmap/geo/fullAddrGeo")
@@ -44,59 +58,17 @@ public class TmapClient {
                         .build())
                 .retrieve()
                 .onStatus(s -> s.is4xxClientError() || s.is5xxServerError(),
-                        resp -> resp.bodyToMono(String.class).defaultIfEmpty("")
+                        resp -> resp.bodyToMono(String.class)
+                                .defaultIfEmpty("")
                                 .map(body -> new IllegalStateException(
                                         "Tmap geocoding 실패 (" + resp.statusCode() + "): " + body)))
                 .bodyToMono(TmapGeocodingResponseDto.class)
-                .map(dto -> {
-                    if (dto == null
-                            || dto.getCoordinateInfo() == null
-                            || dto.getCoordinateInfo().getCoordinate() == null) {
-                        throw new IllegalStateException("지오코딩 응답이 비어 있습니다.");
-                    }
-                    var c = dto.getCoordinateInfo().getCoordinate().get(0);
-
-                    String lat= c.getLat();
-                    String lon= c.getLon();
-                    if (lat == null || lat.isBlank() || lon == null || lon.isBlank()) {
-                        String latEntr = c.getLatEntr();
-                        String lonEntr = c.getLonEntr();
-                        if (latEntr != null && !latEntr.isBlank() && lonEntr != null && !lonEntr.isBlank()) {
-                            return new GeocodePoint(Double.parseDouble(c.getLat()), Double.parseDouble(c.getLon()));
-                        } else {
-                            throw new IllegalStateException("좌표를 찾을 수 없습니다.");
-                        }
-                    }
-                    return new GeocodePoint(Double.parseDouble(lat), Double.parseDouble(lon));
-                })
                 .block();
     }
 
-    //자동차 경로 시간 계산
-    public Integer getDrivingDurationSeconds(GeocodePoint start, GeocodePoint end){
-        String arrivalKst = timeFormatter.formatISOKST();
-
-        Map<String,Object> departure = Map.of(
-                "name","출발지",
-                "lon",start.getLongitude(),
-                "lat",start.getLatitude(),
-                "depSearchFlag","03"
-        );
-        Map<String,Object> destination = Map.of(
-                "name","도착지",
-                "lon",end.getLongitude(),
-                "lat",end.getLatitude(),
-                "destSearchFlag","03"
-        );
-
-        Map<String, Object> routesInfo = new HashMap<>();
-
-        routesInfo.put("departure", departure);
-        routesInfo.put("destination", destination);
-        routesInfo.put("predictionType", "departure");
-        routesInfo.put("predictionTime", arrivalKst);
-        routesInfo.put("trafficInfo","Y");
-        routesInfo.put("searchOption","00");
+    //타임머신 자동차 길 안내 api
+    private TmapResponseDto.TmapRouteResDto callDrivingRouteApi(GeocodePoint start, GeocodePoint end) {
+        Map<String, Object> routesInfo = buildDrivingRouteRequest(start, end);
 
         return tmapWebClient.post()
                 .uri(uriBuilder -> uriBuilder
@@ -106,18 +78,56 @@ public class TmapClient {
                         .queryParam("resCoordType", coordType)
                         .queryParam("reqCoordType", coordType)
                         .queryParam("sort", "index")
-                        .queryParam("totalValue",2)
+                        .queryParam("totalValue", 2)
                         .build())
                 .bodyValue(Map.of("routesInfo", routesInfo))
                 .retrieve()
                 .bodyToMono(TmapResponseDto.TmapRouteResDto.class)
-                .map(this::extractCarDurationSeconds)
                 .block();
-
     }
 
-    //대중교통 경로 시간 계산
-    public Integer getTransitDurationSeconds(GeocodePoint start, GeocodePoint end, int maxCommuteMinutes){
+    //대중교통 요약 api
+    private TmapResponseDto.TmapTransitResDto callTransitRouteApi(GeocodePoint start, GeocodePoint end, int maxCommuteMinutes) {
+        Map<String, Object> requestBody = buildTransitRouteRequest(start, end, maxCommuteMinutes);
+
+        return tmapWebClient.post()
+                .uri("transit/routes/sub")
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(TmapResponseDto.TmapTransitResDto.class)
+                .block();
+    }
+
+
+    private Map<String, Object> buildDrivingRouteRequest(GeocodePoint start, GeocodePoint end) {
+        String arrivalKst = timeFormatter.formatISOKST();
+
+        Map<String, Object> departure = Map.of(
+                "name", "출발지",
+                "lon", start.getLongitude(),
+                "lat", start.getLatitude(),
+                "depSearchFlag", "03"
+        );
+
+        Map<String, Object> destination = Map.of(
+                "name", "도착지",
+                "lon", end.getLongitude(),
+                "lat", end.getLatitude(),
+                "destSearchFlag", "03"
+        );
+
+        Map<String, Object> routesInfo = new HashMap<>();
+        routesInfo.put("departure", departure);
+        routesInfo.put("destination", destination);
+        routesInfo.put("predictionType", "departure");
+        routesInfo.put("predictionTime", arrivalKst);
+        routesInfo.put("trafficInfo", "Y");
+        routesInfo.put("searchOption", "00");
+
+        return routesInfo;
+    }
+
+    private Map<String, Object> buildTransitRouteRequest(GeocodePoint start, GeocodePoint end, int maxCommuteMinutes) {
         String departureKst = timeFormatter.formatDTTM(computeDepartureForArriveAt9(maxCommuteMinutes));
 
         Map<String, Object> body = new HashMap<>();
@@ -128,20 +138,47 @@ public class TmapClient {
         body.put("format", "json");
         body.put("searchDttm", departureKst);
 
-        return tmapWebClient.post()
-                .uri("transit/routes/sub")
-                .bodyValue(body)
-                .retrieve()
-                .bodyToMono(TmapResponseDto.TmapTransitResDto.class)
-                .map(this::extractTransitDurationSeconds)
-                .block();
+        return body;
     }
 
 
-    // 자동차: features[].properties.totalTime
-    public Integer extractCarDurationSeconds(TmapResponseDto.TmapRouteResDto res) {
+    private GeocodePoint parseGeocodeResponse(TmapGeocodingResponseDto dto) {
+        validateGeocodeResponse(dto);
 
-        // 여러 feature가 올 수 있으니 totalTime이 있는 것들 중 최솟값 선택
+        var coordinate = dto.getCoordinateInfo().getCoordinate().get(0);
+        String lat = coordinate.getLat();
+        String lon = coordinate.getLon();
+
+        if (isBlankCoordinate(lat, lon)) {
+            return tryParseEntrCoordinate(coordinate);
+        }
+
+        return new GeocodePoint(Double.parseDouble(lat), Double.parseDouble(lon));
+    }
+
+    private void validateGeocodeResponse(TmapGeocodingResponseDto dto) {
+        if (dto == null || dto.getCoordinateInfo() == null || dto.getCoordinateInfo().getCoordinate() == null) {
+            throw new IllegalStateException("지오코딩 응답이 비어 있습니다.");
+        }
+    }
+
+    private boolean isBlankCoordinate(String lat, String lon) {
+        return lat == null || lat.isBlank() || lon == null || lon.isBlank();
+    }
+
+    private GeocodePoint tryParseEntrCoordinate(Object coordinate) {
+        String latEntr = ((TmapGeocodingResponseDto.Coordinate) coordinate).getLatEntr();
+        String lonEntr = ((TmapGeocodingResponseDto.Coordinate) coordinate).getLonEntr();
+
+        if (latEntr != null && !latEntr.isBlank() && lonEntr != null && !lonEntr.isBlank()) {
+            return new GeocodePoint(Double.parseDouble(latEntr), Double.parseDouble(lonEntr));
+        }
+
+        throw new IllegalStateException("좌표를 찾을 수 없습니다.");
+    }
+
+
+    private Integer extractCarDurationSeconds(TmapResponseDto.TmapRouteResDto res) {
         return res.getFeatures().stream()
                 .map(TmapResponseDto.TmapRouteResDto.Feature::getProperties)
                 .filter(Objects::nonNull)
@@ -151,15 +188,8 @@ public class TmapClient {
                 .orElseThrow(() -> new IllegalStateException("자동차 경로 응답에서 totalTime을 찾지 못했습니다."));
     }
 
-    // 대중교통: plan.itineraries[].totalTime
-    public Integer extractTransitDurationSeconds(TmapResponseDto.TmapTransitResDto res) {
-        if (res == null || res.getMetaData() == null ||
-                res.getMetaData().getPlan() == null ||
-                res.getMetaData().getPlan().getItineraries() == null ||
-                res.getMetaData().getPlan().getItineraries().isEmpty()) {
-
-            throw new IllegalStateException("대중교통 요약 응답에 itineraries가 없습니다. (경로 없음/매핑 실패 가능)");
-        }
+    private Integer extractTransitDurationSeconds(TmapResponseDto.TmapTransitResDto res) {
+        validateTransitResponse(res);
 
         return res.getMetaData().getPlan().getItineraries().stream()
                 .map(TmapResponseDto.TmapTransitResDto.Itinerary::getTotalTime)
@@ -167,6 +197,17 @@ public class TmapClient {
                 .min(Integer::compareTo)
                 .orElseThrow(() -> new IllegalStateException("대중교통 요약 응답에서 totalTime을 찾지 못했습니다."));
     }
+
+    private void validateTransitResponse(TmapResponseDto.TmapTransitResDto res) {
+        if (res == null || res.getMetaData() == null ||
+                res.getMetaData().getPlan() == null ||
+                res.getMetaData().getPlan().getItineraries() == null ||
+                res.getMetaData().getPlan().getItineraries().isEmpty()) {
+            throw new IllegalStateException("대중교통 요약 응답에 itineraries가 없습니다. (경로 없음/매핑 실패 가능)");
+        }
+    }
+
+
 
     private ZonedDateTime computeDepartureForArriveAt9(int maxCommuteMinutes) {
         ZonedDateTime now = ZonedDateTime.now(KST);

@@ -3,10 +3,13 @@ package zighang2.zighang.web.domain.user;
 import jakarta.persistence.*;
 import lombok.*;
 import zighang2.zighang.global.common.BaseEntity;
+import zighang2.zighang.web.domain.JobRecommend;
 import zighang2.zighang.web.domain.enums.JobGroup;
 import zighang2.zighang.web.domain.enums.JobPosition;
 import zighang2.zighang.web.domain.enums.Transport;
 import zighang2.zighang.web.domain.enums.UserRole;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -63,6 +66,9 @@ public class User extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "character_id")
     private OnboardingCharacter onboardingCharacter;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<JobRecommend> jobRecommendList;
 
     public void updateUsersInfo(JobGroup jobGroup, String companySize, String eduation, String workExperience, String receivingEmail) {
         if (jobGroup != null) this.jobGroup = jobGroup;

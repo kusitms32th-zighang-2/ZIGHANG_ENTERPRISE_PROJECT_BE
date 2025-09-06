@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import zighang2.zighang.global.common.BaseEntity;
-import zighang2.zighang.web.domain.enums.CompanyType;
+import zighang2.zighang.web.domain.enums.*;
 
 @Getter
 @Builder
@@ -17,12 +17,35 @@ public class JobRecommend extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 100)
     private String title;
 
+    @Column(length = 50)
     private String companyName;
+
+    @Column(length = 254)
+    private String recruitmentAddress;
+
+    @Column(columnDefinition = "TEXT")
+    private String ocrData;
+
+    @Column(length = 50)
+    private String content;
 
     @Enumerated(EnumType.STRING)
     private CompanyType companyType;
 
-    private String recruitmentAddress;
+    @Enumerated(EnumType.STRING)
+    private Education education;
+
+    @Enumerated(EnumType.STRING)
+    private RecruitmentType recruitmentType;
+
+    @Enumerated(EnumType.STRING)
+    private JobGroup depth1;
+
+    @Enumerated(EnumType.STRING)
+    private JobPosition depth2;
+
+
 }

@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import zighang2.zighang.web.domain.user.User;
-import zighang2.zighang.web.domain.user.UserRole;
+import zighang2.zighang.web.domain.enums.UserRole;
     import static lombok.AccessLevel.PROTECTED;
 
 @Getter

@@ -10,7 +10,7 @@ import zighang2.zighang.global.service.RedisService;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.auth.jwt.KakaoUtil;
 import zighang2.zighang.web.domain.user.User;
-import zighang2.zighang.web.domain.user.UserRole;
+import zighang2.zighang.web.domain.enums.UserRole;
 import zighang2.zighang.web.dto.KakaoDto;
 import zighang2.zighang.web.dto.TokenResponseDto;
 import zighang2.zighang.web.repository.UserRepository;

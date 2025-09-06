@@ -3,6 +3,10 @@ package zighang2.zighang.web.domain.user;
 import jakarta.persistence.*;
 import lombok.*;
 import zighang2.zighang.global.common.BaseEntity;
+import zighang2.zighang.web.domain.enums.JobGroup;
+import zighang2.zighang.web.domain.enums.JobPosition;
+import zighang2.zighang.web.domain.enums.Transport;
+import zighang2.zighang.web.domain.enums.UserRole;
 
 @Entity
 @Getter
@@ -10,7 +14,8 @@ import zighang2.zighang.global.common.BaseEntity;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class User extends BaseEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long id;
 
@@ -26,11 +31,22 @@ public class User extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String nickname;
 
+    @Column(length = 50)
+    private String address;
+
+    @Enumerated(EnumType.STRING)
+    private Transport transport;
+
+    private Integer maxCommuteMinutes;
+
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
-    @Column(length = 50)
-    private String jobGroup;
+    @Enumerated(EnumType.STRING)
+    private JobGroup jobGroup;
+
+    @Enumerated(EnumType.STRING)
+    private JobPosition jobPosition;
 
     @Column(length = 50)
     private String companySize;
@@ -44,8 +60,8 @@ public class User extends BaseEntity {
     @Column(length = 50)
     private String receivingEmail;
 
-    public void updateUsersInfo(String jobGroup, String companySize, String eduation, String workExperience, String receivingEmail) {
-        if (jobGroup != null) this.jobGroup = jobGroup.trim();
+    public void updateUsersInfo(JobGroup jobGroup, String companySize, String eduation, String workExperience, String receivingEmail) {
+        if (jobGroup != null) this.jobGroup = jobGroup;
         if (companySize != null) this.companySize = companySize.trim();
         if (eduation != null) this.education = eduation.trim();
         if (workExperience != null) this.workExperience = workExperience.trim();

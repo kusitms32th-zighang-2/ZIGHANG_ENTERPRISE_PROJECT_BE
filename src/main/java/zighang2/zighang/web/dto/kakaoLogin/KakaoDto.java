@@ -1,4 +1,4 @@
-package zighang2.zighang.web.dto;
+package zighang2.zighang.web.dto.kakaoLogin;
 
 import lombok.Getter;
 

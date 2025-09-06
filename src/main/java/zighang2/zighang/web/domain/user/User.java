@@ -3,6 +3,9 @@ package zighang2.zighang.web.domain.user;
 import jakarta.persistence.*;
 import lombok.*;
 import zighang2.zighang.global.common.BaseEntity;
+import zighang2.zighang.web.domain.user.enums.JobGroup;
+import zighang2.zighang.web.domain.user.enums.JobPosition;
+import zighang2.zighang.web.domain.user.enums.Transport;
 import zighang2.zighang.web.domain.user.enums.UserRole;
 
 @Entity
@@ -11,7 +14,8 @@ import zighang2.zighang.web.domain.user.enums.UserRole;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class User extends BaseEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long id;
 
@@ -27,13 +31,13 @@ public class User extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String nickname;
 
-    @Column(nullable = false)
+    @Column(length = 50)
     private String address;
 
     @Enumerated(EnumType.STRING)
     private Transport transport;
 
-    private int maxCommuteMinutes;
+    private Integer maxCommuteMinutes;
 
     @Enumerated(EnumType.STRING)
     private UserRole userRole;

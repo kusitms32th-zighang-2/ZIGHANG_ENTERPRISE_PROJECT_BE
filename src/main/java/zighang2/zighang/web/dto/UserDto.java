@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import zighang2.zighang.web.domain.user.User;
+import zighang2.zighang.web.domain.user.enums.JobGroup;
 import zighang2.zighang.web.domain.user.enums.UserRole;
     import static lombok.AccessLevel.PROTECTED;
 
@@ -33,7 +34,7 @@ public class UserDto {
     @AllArgsConstructor
     @NoArgsConstructor(access = PROTECTED)
     public static class MypageModifyDto {
-        private String jobGroup;
+        private JobGroup jobGroup;
         private String companySize;
         private String education;
         private String workExperience;

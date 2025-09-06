@@ -7,6 +7,6 @@ import zighang2.zighang.web.domain.user.OnboardingCharacter;
 import java.util.Optional;
 
 @Repository
-public interface OnboardingCharacterRepository extends JpaRepository<OnboardingCharacter, Long> {
+public interface OnboardingRepository extends JpaRepository<OnboardingCharacter, Long> {
     Optional<OnboardingCharacter> findByCompanyTypeAndWelfare(String companyType, String welfare);
 }

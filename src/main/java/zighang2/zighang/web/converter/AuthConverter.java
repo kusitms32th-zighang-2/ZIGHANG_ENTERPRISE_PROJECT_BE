@@ -2,7 +2,7 @@ package zighang2.zighang.web.converter;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import zighang2.zighang.web.domain.user.User;
-import zighang2.zighang.web.domain.user.UserRole;
+import zighang2.zighang.web.domain.enums.UserRole;
 
 public class AuthConverter {
 

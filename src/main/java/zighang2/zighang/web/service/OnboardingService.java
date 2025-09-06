@@ -6,7 +6,7 @@ import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.GeneralException;
 import zighang2.zighang.web.domain.user.OnboardingCharacter;
 import zighang2.zighang.web.dto.OnboardingDto;
-import zighang2.zighang.web.repository.OnboardingCharacterRepository;
+import zighang2.zighang.web.repository.OnboardingRepository;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OnboardingService {
 
-    private final OnboardingCharacterRepository onboardingCharacterRepository;
+    private final OnboardingRepository onboardingRepository;
 
     public OnboardingDto.OnboardingResponse getOnboardingCharacter(OnboardingDto.OnboardingRequest request) {
 
@@ -28,10 +28,6 @@ public class OnboardingService {
                 .collect(Collectors.groupingBy(ans -> ans, Collectors.counting()));
 
         List<String> companyTypes = List.of("대기업", "중견기업", "중소", "유니콘", "스타트업", "외국계");
-
-        List<String> companyList = companyAnswers.stream()
-                .distinct()
-                .toList();
 
         Map<String, Double> companyRatio = new LinkedHashMap<>();
         int baseScore = 1;
@@ -62,7 +58,7 @@ public class OnboardingService {
                 .toList();
 
         // 3. DB에서 캐릭터 조회
-        OnboardingCharacter character = onboardingCharacterRepository.findByCompanyTypeAndWelfare(companyTypeFinal, welfareFinal)
+        OnboardingCharacter character = onboardingRepository.findByCompanyTypeAndWelfare(companyTypeFinal, welfareFinal)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.CHARACTER_NOT_FOUND));
 
         // 4. Response DTO 반환

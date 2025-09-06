@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import zighang2.zighang.web.domain.CompanyType;
+import zighang2.zighang.web.domain.enums.CompanyType;
 import zighang2.zighang.web.domain.JobRecommend;
 
 public class JobRecommendDto {

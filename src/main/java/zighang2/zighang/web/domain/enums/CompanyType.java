@@ -1,4 +1,4 @@
-package zighang2.zighang.web.domain;
+package zighang2.zighang.web.domain.enums;
 
 public enum CompanyType {
     MAJOR("대기업"),

@@ -1,4 +1,4 @@
-package zighang2.zighang.web.domain.user.enums;
+package zighang2.zighang.web.domain.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

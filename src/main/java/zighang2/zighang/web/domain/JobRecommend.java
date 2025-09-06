@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import zighang2.zighang.global.common.BaseEntity;
+import zighang2.zighang.web.domain.enums.CompanyType;
 
 @Getter
 @Builder

@@ -1,4 +1,4 @@
-package zighang2.zighang.web.domain.user.enums;
+package zighang2.zighang.web.domain.enums;
 
 public enum JobGroup {
     전체("전체"),

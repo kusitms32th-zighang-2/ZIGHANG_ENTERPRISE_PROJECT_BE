@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import zighang2.zighang.web.domain.enums.JobGroup;
 import zighang2.zighang.web.domain.user.User;
-import zighang2.zighang.web.domain.user.enums.JobGroup;
-import zighang2.zighang.web.domain.user.enums.UserRole;
+import zighang2.zighang.web.domain.enums.UserRole;
     import static lombok.AccessLevel.PROTECTED;
 
 @Getter

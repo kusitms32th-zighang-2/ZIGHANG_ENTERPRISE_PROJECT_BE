@@ -1,15 +1,21 @@
 package zighang2.zighang.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import zighang2.zighang.global.utils.TimeFormatter;
 import zighang2.zighang.web.dto.tmap.GeocodePoint;
 import zighang2.zighang.web.dto.tmap.response.TmapGeocodingResponseDto;
 import zighang2.zighang.web.dto.tmap.response.TmapResponseDto;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Component
@@ -17,7 +23,10 @@ import java.util.*;
 @RequiredArgsConstructor
 public class TmapClient {
 
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
     private final WebClient tmapWebClient;
+    private final TimeFormatter timeFormatter;
+    private final ObjectMapper objectMapper;
 
     @Value("${tmap.coord-type}")
     private String coordType;
@@ -70,19 +79,41 @@ public class TmapClient {
 
     //자동차 경로 시간 계산
     public Integer getDrivingDurationSeconds(GeocodePoint start, GeocodePoint end){
-        Map<String, Object> body = new HashMap<>();
-        body.put("startX", start.lonAsString());
-        body.put("startY", start.latAsString());
-        body.put("endX", end.lonAsString());
-        body.put("endY", end.latAsString());
-        body.put("reqCoordType",coordType);
-        body.put("resCoordType",coordType);
-        body.put("format", "json");
-        body.put("trafficInfo","Y");
+        String departureKst = timeFormatter.formatISOKST();
+
+        Map<String,Object> departure = Map.of(
+                "name","출발지",
+                "lon",start.getLongitude(),
+                "lat",start.getLatitude(),
+                "depSearchFlag","03"
+        );
+        Map<String,Object> destination = Map.of(
+                "name","도착지",
+                "lon",end.getLongitude(),
+                "lat",end.getLatitude(),
+                "destSearchFlag","03"
+        );
+
+        Map<String, Object> routesInfo = new HashMap<>();
+
+        routesInfo.put("departure", departure);
+        routesInfo.put("destination", destination);
+        routesInfo.put("predictionType", "departure");
+        routesInfo.put("predictionTime", departureKst);
+        routesInfo.put("trafficInfo","Y");
+        routesInfo.put("searchOption","00");
 
         return tmapWebClient.post()
-                .uri("tmap/routes")
-                .bodyValue(body)
+                .uri(uriBuilder -> uriBuilder
+                        .path("tmap/routes/prediction")
+                        .queryParam("version", 1)
+                        .queryParam("format", "json")
+                        .queryParam("resCoordType", coordType)
+                        .queryParam("reqCoordType", coordType)
+                        .queryParam("sort", "index")
+                        .queryParam("totalValue",2)
+                        .build())
+                .bodyValue(Map.of("routesInfo", routesInfo))
                 .retrieve()
                 .bodyToMono(TmapResponseDto.TmapRouteResDto.class)
                 .map(this::extractCarDurationSeconds)
@@ -91,13 +122,18 @@ public class TmapClient {
     }
 
     //대중교통 경로 시간 계산
-    public Integer getTransitDurationSeconds(GeocodePoint start, GeocodePoint end){
+    public Integer getTransitDurationSeconds(GeocodePoint start, GeocodePoint end, int maxCommuteMinutes){
+        ZonedDateTime departureKst = computeDepartureForArriveAt9(maxCommuteMinutes);
+
+        log.info("maxMinutes: {}", maxCommuteMinutes);
+
         Map<String, Object> body = new HashMap<>();
         body.put("startX", start.lonAsString());
         body.put("startY", start.latAsString());
         body.put("endX", end.lonAsString());
         body.put("endY", end.latAsString());
         body.put("format", "json");
+        body.put("searchDttm", timeFormatter.formatDTTM(departureKst));
 
         return tmapWebClient.post()
                 .uri("transit/routes/sub")
@@ -111,9 +147,7 @@ public class TmapClient {
 
     // 자동차: features[].properties.totalTime
     public Integer extractCarDurationSeconds(TmapResponseDto.TmapRouteResDto res) {
-        if (res == null || res.getFeatures() == null || res.getFeatures().isEmpty()) {
-            throw new IllegalStateException("자동차 경로 응답에 features가 없습니다.");
-        }
+
         // 여러 feature가 올 수 있으니 totalTime이 있는 것들 중 최솟값 선택
         return res.getFeatures().stream()
                 .map(TmapResponseDto.TmapRouteResDto.Feature::getProperties)
@@ -135,6 +169,15 @@ public class TmapClient {
                 .filter(Objects::nonNull)
                 .min(Comparator.naturalOrder())
                 .orElseThrow(() -> new IllegalStateException("대중교통 요약 응답에서 totalTime을 찾지 못했습니다."));
+    }
+
+    private ZonedDateTime computeDepartureForArriveAt9(int maxCommuteMinutes) {
+        ZonedDateTime now = ZonedDateTime.now(KST);
+        LocalDate targetDate = now.toLocalTime().isBefore(LocalTime.of(9, 0))
+                ? now.toLocalDate()
+                : now.toLocalDate().plusDays(1);
+        ZonedDateTime arriveAt9 = ZonedDateTime.of(targetDate, LocalTime.of(9, 0), KST);
+        return arriveAt9.minusMinutes(maxCommuteMinutes);
     }
 
 }

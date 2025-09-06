@@ -21,7 +21,7 @@ public class WebClientConfig {
     @Bean
     public WebClient tmapWebClient() {
         HttpClient httpClient = HttpClient.create()
-                .responseTimeout(Duration.ofSeconds(3));
+                .responseTimeout(Duration.ofSeconds(10));
         return WebClient.builder()
                 .baseUrl(tmapBaseUrl)
                 .defaultHeader("appKey", appKey)

@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 import zighang2.zighang.global.utils.TimeFormatter;
 import zighang2.zighang.web.dto.tmap.GeocodePoint;
 import zighang2.zighang.web.dto.tmap.response.TmapGeocodingResponseDto;
@@ -19,14 +18,12 @@ import java.time.ZonedDateTime;
 import java.util.*;
 
 @Component
-@Slf4j
 @RequiredArgsConstructor
 public class TmapClient {
 
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
     private final WebClient tmapWebClient;
     private final TimeFormatter timeFormatter;
-    private final ObjectMapper objectMapper;
 
     @Value("${tmap.coord-type}")
     private String coordType;
@@ -55,7 +52,6 @@ public class TmapClient {
                     if (dto == null
                             || dto.getCoordinateInfo() == null
                             || dto.getCoordinateInfo().getCoordinate() == null) {
-                        log.error("지오코딩 응답이 null입니다. 주소: {}", address);
                         throw new IllegalStateException("지오코딩 응답이 비어 있습니다.");
                     }
                     var c = dto.getCoordinateInfo().getCoordinate().get(0);
@@ -66,7 +62,6 @@ public class TmapClient {
                         String latEntr = c.getLatEntr();
                         String lonEntr = c.getLonEntr();
                         if (latEntr != null && !latEntr.isBlank() && lonEntr != null && !lonEntr.isBlank()) {
-                            log.info("지오코딩된 주소(입구점 좌표): "+latEntr+lonEntr);
                             return new GeocodePoint(Double.parseDouble(c.getLat()), Double.parseDouble(c.getLon()));
                         } else {
                             throw new IllegalStateException("좌표를 찾을 수 없습니다.");
@@ -79,7 +74,7 @@ public class TmapClient {
 
     //자동차 경로 시간 계산
     public Integer getDrivingDurationSeconds(GeocodePoint start, GeocodePoint end){
-        String departureKst = timeFormatter.formatISOKST();
+        String arrivalKst = timeFormatter.formatISOKST();
 
         Map<String,Object> departure = Map.of(
                 "name","출발지",
@@ -99,7 +94,7 @@ public class TmapClient {
         routesInfo.put("departure", departure);
         routesInfo.put("destination", destination);
         routesInfo.put("predictionType", "departure");
-        routesInfo.put("predictionTime", departureKst);
+        routesInfo.put("predictionTime", arrivalKst);
         routesInfo.put("trafficInfo","Y");
         routesInfo.put("searchOption","00");
 
@@ -123,9 +118,7 @@ public class TmapClient {
 
     //대중교통 경로 시간 계산
     public Integer getTransitDurationSeconds(GeocodePoint start, GeocodePoint end, int maxCommuteMinutes){
-        ZonedDateTime departureKst = computeDepartureForArriveAt9(maxCommuteMinutes);
-
-        log.info("maxMinutes: {}", maxCommuteMinutes);
+        String departureKst = timeFormatter.formatDTTM(computeDepartureForArriveAt9(maxCommuteMinutes));
 
         Map<String, Object> body = new HashMap<>();
         body.put("startX", start.lonAsString());
@@ -133,7 +126,7 @@ public class TmapClient {
         body.put("endX", end.lonAsString());
         body.put("endY", end.latAsString());
         body.put("format", "json");
-        body.put("searchDttm", timeFormatter.formatDTTM(departureKst));
+        body.put("searchDttm", departureKst);
 
         return tmapWebClient.post()
                 .uri("transit/routes/sub")
@@ -160,14 +153,18 @@ public class TmapClient {
 
     // 대중교통: plan.itineraries[].totalTime
     public Integer extractTransitDurationSeconds(TmapResponseDto.TmapTransitResDto res) {
-        if (res == null || res.getPlan() == null || res.getPlan().getItineraries() == null
-                || res.getPlan().getItineraries().isEmpty()) {
-            throw new IllegalStateException("대중교통 요약 응답에 itineraries가 없습니다.");
+        if (res == null || res.getMetaData() == null ||
+                res.getMetaData().getPlan() == null ||
+                res.getMetaData().getPlan().getItineraries() == null ||
+                res.getMetaData().getPlan().getItineraries().isEmpty()) {
+
+            throw new IllegalStateException("대중교통 요약 응답에 itineraries가 없습니다. (경로 없음/매핑 실패 가능)");
         }
-        return res.getPlan().getItineraries().stream()
+
+        return res.getMetaData().getPlan().getItineraries().stream()
                 .map(TmapResponseDto.TmapTransitResDto.Itinerary::getTotalTime)
                 .filter(Objects::nonNull)
-                .min(Comparator.naturalOrder())
+                .min(Integer::compareTo)
                 .orElseThrow(() -> new IllegalStateException("대중교통 요약 응답에서 totalTime을 찾지 못했습니다."));
     }
 

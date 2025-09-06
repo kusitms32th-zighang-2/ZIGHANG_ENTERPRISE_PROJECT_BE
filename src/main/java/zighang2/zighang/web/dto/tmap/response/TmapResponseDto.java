@@ -51,9 +51,16 @@ public class TmapResponseDto {
     // 대중교통 경로 안내 응답 DTO
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public class TmapTransitResDto {
-        @JsonProperty("plan")
-        private Plan plan;
+    public static class TmapTransitResDto {
+        @JsonProperty("metaData")
+        private MetaData metaData;
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class MetaData {
+            @JsonProperty("plan")
+            private Plan plan;
+        }
 
         @Data
         @JsonIgnoreProperties(ignoreUnknown = true)
@@ -67,10 +74,6 @@ public class TmapResponseDto {
         public static class Itinerary {
             @JsonProperty("totalTime")
             private int totalTime;
-            @JsonProperty("totalDistance")
-            private int totalDistance;
-            @JsonProperty("transferCount")
-            private int transferCount;
         }
     }
 }

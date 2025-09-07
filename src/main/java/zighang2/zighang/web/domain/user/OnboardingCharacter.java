@@ -1,6 +1,7 @@
 package zighang2.zighang.web.domain.user;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import zighang2.zighang.global.common.BaseEntity;
@@ -25,7 +26,7 @@ public class OnboardingCharacter extends BaseEntity {
     @Column(length = 20)
     private String welfare;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "character")
+    @OneToMany(mappedBy = "onboardingCharacter",cascade = CascadeType.ALL)
     private List<User> userList = new ArrayList<>();
 
 

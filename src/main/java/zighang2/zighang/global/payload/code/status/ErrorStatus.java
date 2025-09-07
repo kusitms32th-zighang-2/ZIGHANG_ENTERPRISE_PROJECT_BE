@@ -21,7 +21,12 @@ public enum ErrorStatus implements BaseErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_1002", "해당하는 사용자가 존재하지 않습니다."),
     NICKNAME_NOT_EXIST(HttpStatus.BAD_REQUEST, "USER_1003", "닉네임은 필수 입니다."),
     EMAIL_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "USER_1004", "이미 존재하는 이메일 입니다."),
-    INVALID_VALUE(HttpStatus.BAD_REQUEST, "USER1005", "유효하지 않은 입력값입니다."),
+    ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND,"USER_1005","사용자의 주소를 찾을 수 없습니다."),
+    TRANSPORT_NOT_FOUND(HttpStatus.NOT_FOUND,"USER_1006","사용자의 교통수단을 찾을 수 없습니다."),
+    INVALID_TRANSPORT(HttpStatus.BAD_REQUEST,"USER_1007","지원하지않는 교통수단입니다."),
+    MAXCOMMUTE_NOT_FOUND(HttpStatus.NOT_FOUND,"USER_1008","사용자의 최대 통근 시간을 찾을 수 없습니다."),
+    INVALID_VALUE(HttpStatus.BAD_REQUEST, "USER1101", "유효하지 않은 입력값입니다."),
+
 
     //인증 관련 에러 4000
     MALFORMED_TOKEN(HttpStatus.BAD_REQUEST, "TOKEN4001", "잘못된 형식의 토큰입니다."),
@@ -34,7 +39,17 @@ public enum ErrorStatus implements BaseErrorCode {
     BLOCKED_TOKEN(HttpStatus.FORBIDDEN, "TOKEN4019", "블랙리스트에 등록된 토큰입니다"),
 
     // 온보딩 관련 에러 5000
-    CHARACTER_NOT_FOUND(HttpStatus.BAD_REQUEST, "ONBOARDING_5001", "해당하는 캐릭터가 존재하지 않습니다.")
+    CHARACTER_NOT_FOUND(HttpStatus.BAD_REQUEST, "ONBOARDING_5001", "해당하는 캐릭터가 존재하지 않습니다."),
+
+    // TMAP API 관련 에러 2000
+    TMAP_COORDINATE_NOT_FOUND(HttpStatus.NOT_FOUND,"TMAP_2001","좌표를 찾을 수 없습니다."),
+    TMAP_GEOCODING_EMPTY(HttpStatus.NOT_FOUND, "TMAP_2002", "지오코딩 결과가 비어 있습니다."),
+    TMAP_GEOCODING_MAPPING_FAILED(HttpStatus.BAD_REQUEST, "TMAP_2003", "지오코딩 응답 매핑에 실패했습니다."),
+    TMAP_DRIVING_EMPTY(HttpStatus.NOT_FOUND, "TMAP_2101", "자동차 경로 응답이 비어 있습니다."),
+    TMAP_DRIVING_MAPPING_FAILED(HttpStatus.BAD_REQUEST, "TMAP_2102", "자동차 경로 응답에서 totalTime을 찾지 못했습니다."),
+    TMAP_TRANSIT_EMPTY(HttpStatus.NOT_FOUND, "TMAP_2201", "대중교통 요약 응답에 itineraries가 없습니다."),
+    TMAP_TRANSIT_MAPPING_FAILED(HttpStatus.BAD_REQUEST, "TMAP_2202", "대중교통 요약 응답에서 totalTime을 찾지 못했습니다."),
+
     ;
 
 

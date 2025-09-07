@@ -9,7 +9,7 @@ import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.payload.ApiResponse;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.GeneralException;
-import zighang2.zighang.web.dto.TokenResponseDto;
+import zighang2.zighang.web.dto.kakaoLogin.TokenResponseDto;
 import zighang2.zighang.web.service.AuthService;
 
 @RestController

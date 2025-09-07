@@ -1,5 +1,7 @@
 package zighang2.zighang.web.domain.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum JobPosition {
     // IT·개발
     서버_백엔드("서버·백엔드"),
@@ -366,6 +368,7 @@ public enum JobPosition {
         this.display = display;
     }
 
+    @JsonValue
     public String getDisplay() {
         return display;
     }

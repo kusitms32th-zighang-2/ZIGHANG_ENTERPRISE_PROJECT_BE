@@ -11,12 +11,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import zighang2.zighang.global.auth.UserPrincipal;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
-import zighang2.zighang.global.payload.exception.GeneralException;
 import zighang2.zighang.global.payload.exception.handler.BadRequestHandler;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
 import zighang2.zighang.global.service.RedisService;
 import zighang2.zighang.web.domain.user.User;
-import zighang2.zighang.web.dto.TokenResponseDto;
+import zighang2.zighang.web.dto.kakaoLogin.TokenResponseDto;
 
 import java.security.Key;
 import java.util.Base64;

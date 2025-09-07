@@ -2,16 +2,18 @@ package zighang2.zighang.web.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.GeneralException;
+import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
+import zighang2.zighang.web.domain.enums.CompanyType;
 import zighang2.zighang.web.domain.user.OnboardingCharacter;
+import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.dto.OnboardingDto;
 import zighang2.zighang.web.repository.OnboardingRepository;
+import zighang2.zighang.web.repository.UserRepository;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,7 +21,8 @@ import java.util.stream.Collectors;
 public class OnboardingService {
 
     private final OnboardingRepository onboardingRepository;
-
+    private final UserRepository userRepository;
+    private final JwtProvider jwtProvider;
     public OnboardingDto.OnboardingResponse getOnboardingCharacter(OnboardingDto.OnboardingRequest request) {
 
         // 1. 기업규모 카운팅
@@ -27,7 +30,9 @@ public class OnboardingService {
         Map<String, Long> companyCount = companyAnswers.stream()
                 .collect(Collectors.groupingBy(ans -> ans, Collectors.counting()));
 
-        List<String> companyTypes = List.of("대기업", "중견기업", "중소", "유니콘", "스타트업", "외국계");
+        List<String> companyTypes = Arrays.stream(CompanyType.values())
+                .map(CompanyType::getDisplayName)
+                .toList();
 
         Map<String, Double> companyRatio = new LinkedHashMap<>();
         int baseScore = 1;
@@ -66,6 +71,7 @@ public class OnboardingService {
                 .companyTypeFinal(companyTypeFinal)
                 .companyRatio(companyRatio)
                 .welfareList(welfareList)
+                .characterId(character.getId())
                 .characterName(character.getCharacterName())
                 .build();
     }
@@ -87,4 +93,13 @@ public class OnboardingService {
         // 동점이 아니면 1등 리턴, 동점이면 fallback
         return top.size() == 1 ? top.get(0) : fallback;
     }
+
+//    public OnboardingDto.OnboardingSignupResponse onboardingSignup(OnboardingDto.OnboardingSignupRequest request) {
+//        // user 확인
+//        User user = userRepository.findById(jwtProvider.getCurrentUserId())
+//                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
+//        // 데이터 저장
+//        user.updateUsersInfo(request.getJobGroup(), );
+//        // redis 저장
+//    }
 }

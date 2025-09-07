@@ -4,10 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import zighang2.zighang.global.common.BaseEntity;
 import zighang2.zighang.web.domain.JobRecommend;
-import zighang2.zighang.web.domain.enums.JobGroup;
-import zighang2.zighang.web.domain.enums.JobPosition;
-import zighang2.zighang.web.domain.enums.Transport;
-import zighang2.zighang.web.domain.enums.UserRole;
+import zighang2.zighang.web.domain.enums.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,10 +50,10 @@ public class User extends BaseEntity {
     private JobPosition jobPosition;
 
     @Column(length = 50)
-    private String companySize;
+    private CompanyType companyType;
 
     @Column(length = 50)
-    private String education;
+    private Education education;
 
     @Column(length = 50)
     private String workExperience;
@@ -71,10 +68,11 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<JobRecommend> jobRecommendList= new ArrayList<>();
 
-    public void updateUsersInfo(JobGroup jobGroup, String companySize, String eduation, String workExperience, String receivingEmail) {
+    public void updateUsersInfo(JobGroup jobGroup, JobPosition jobPosition, CompanyType companyType, Education education, String workExperience, String receivingEmail) {
         if (jobGroup != null) this.jobGroup = jobGroup;
-        if (companySize != null) this.companySize = companySize.trim();
-        if (eduation != null) this.education = eduation.trim();
+        if (jobPosition != null) this.jobPosition = jobPosition;
+        if (companyType != null) this.companyType = companyType;
+        if (education != null) this.education = education;
         if (workExperience != null) this.workExperience = workExperience.trim();
         if (receivingEmail != null) this.receivingEmail = receivingEmail.trim();
     }

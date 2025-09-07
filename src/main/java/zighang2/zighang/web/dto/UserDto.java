@@ -4,10 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import zighang2.zighang.web.domain.enums.JobGroup;
+import zighang2.zighang.web.domain.enums.*;
 import zighang2.zighang.web.domain.user.User;
-import zighang2.zighang.web.domain.enums.UserRole;
-    import static lombok.AccessLevel.PROTECTED;
+
+import static lombok.AccessLevel.PROTECTED;
 
 @Getter
 @Builder
@@ -35,15 +35,17 @@ public class UserDto {
     @NoArgsConstructor(access = PROTECTED)
     public static class MypageModifyDto {
         private JobGroup jobGroup;
-        private String companySize;
-        private String education;
+        private JobPosition jobPosition;
+        private CompanyType companyType;
+        private Education education;
         private String workExperience;
         private String receivingEmail;
 
         public static MypageModifyDto of(User user) {
             return MypageModifyDto.builder()
-                    .companySize(user.getCompanySize())
+                    .companyType(user.getCompanyType())
                     .jobGroup(user.getJobGroup())
+                    .jobPosition(user.getJobPosition())
                     .education(user.getEducation())
                     .workExperience(user.getWorkExperience())
                     .receivingEmail(user.getReceivingEmail())

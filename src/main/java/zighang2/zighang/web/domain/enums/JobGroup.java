@@ -36,7 +36,6 @@ public enum JobGroup {
         this.display = display;
     }
 
-    @JsonValue
     public String getDisplay() {
         return display;
     }

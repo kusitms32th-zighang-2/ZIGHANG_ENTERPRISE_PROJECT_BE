@@ -16,7 +16,6 @@ public enum Education {
         this.displayName = displayName;
     }
 
-    @JsonValue
     public String getDisplayName() {
         return displayName;
     }

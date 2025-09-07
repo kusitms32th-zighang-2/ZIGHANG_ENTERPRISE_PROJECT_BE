@@ -368,7 +368,6 @@ public enum JobPosition {
         this.display = display;
     }
 
-    @JsonValue
     public String getDisplay() {
         return display;
     }

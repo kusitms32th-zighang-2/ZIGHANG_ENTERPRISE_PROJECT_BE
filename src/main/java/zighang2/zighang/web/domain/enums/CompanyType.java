@@ -17,7 +17,6 @@ public enum CompanyType {
         this.displayName = displayName;
     }
 
-    @JsonValue
     public String getDisplayName() {
         return displayName;
     }

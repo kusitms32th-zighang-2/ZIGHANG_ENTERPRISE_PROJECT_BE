@@ -25,13 +25,17 @@ public class UserService {
 
         user.updateUsersInfo(
                 mypageModifyDto.getJobGroup(),
-                mypageModifyDto.getCompanySize(),
+                mypageModifyDto.getJobPosition(),
+                mypageModifyDto.getCompanyType(),
                 mypageModifyDto.getEducation(),
                 mypageModifyDto.getWorkExperience(),
-                mypageModifyDto.getReceivingEmail());
-        userRepository.save(user);
+                mypageModifyDto.getAddress(),
+                mypageModifyDto.getTransport(),
+                mypageModifyDto.getMaxCommuteMinutes(),
+                mypageModifyDto.getReceivingEmail()
+        );
 
-        return mypageModifyDto.of(user);
+        return UserDto.MypageModifyDto.of(user);
     }
 
     public UserDto.MyPageDto getMypage() {

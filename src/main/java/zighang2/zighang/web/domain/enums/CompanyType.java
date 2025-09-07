@@ -1,7 +1,5 @@
 package zighang2.zighang.web.domain.enums;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 public enum CompanyType {
     MAJOR("대기업"),
     MID_SIZE("중견기업"),
@@ -17,7 +15,6 @@ public enum CompanyType {
         this.displayName = displayName;
     }
 
-    @JsonValue
     public String getDisplayName() {
         return displayName;
     }

@@ -7,7 +7,7 @@ import zighang2.zighang.web.domain.JobRecommend;
 import java.util.List;
 
 @Repository
-public interface JobPostingRepository extends JpaRepository<JobRecommend, Long> {
+public interface JobRecommendRepository extends JpaRepository<JobRecommend, Long> {
 
     List<JobRecommend> findTop10ByOrderByIdDesc();
 }

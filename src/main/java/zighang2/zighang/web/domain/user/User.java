@@ -9,6 +9,7 @@ import zighang2.zighang.web.domain.enums.JobPosition;
 import zighang2.zighang.web.domain.enums.Transport;
 import zighang2.zighang.web.domain.enums.UserRole;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -68,7 +69,7 @@ public class User extends BaseEntity {
     private OnboardingCharacter onboardingCharacter;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<JobRecommend> jobRecommendList;
+    private List<JobRecommend> jobRecommendList= new ArrayList<>();
 
     public void updateUsersInfo(JobGroup jobGroup, String companySize, String eduation, String workExperience, String receivingEmail) {
         if (jobGroup != null) this.jobGroup = jobGroup;

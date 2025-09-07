@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import zighang2.zighang.global.common.BaseEntity;
 import zighang2.zighang.web.domain.enums.*;
+import zighang2.zighang.web.domain.user.User;
 
 @Getter
 @Builder
@@ -47,5 +48,8 @@ public class JobRecommend extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private JobPosition depth2;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
 }

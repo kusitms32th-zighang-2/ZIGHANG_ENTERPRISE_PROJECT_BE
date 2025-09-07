@@ -19,7 +19,7 @@ public class RecommendController {
 
     @GetMapping("/top6")
     @Operation(summary = "추천공고 6개 조회 API", description = "사용자가 회원가입 후, 결과페이지에서 보여지는 추천 공고 6개를 조회하는 API입니다.")
-    public List<JobRecommendDto.JobRecommendResponseDto> get6RecommendPosting(){
-        return recommendService.recommend6Posting();
+    public List<JobRecommendDto.JobRecommendResponseDto> get6Recommends(){
+        return recommendService.get6Recommends();
     }
 }

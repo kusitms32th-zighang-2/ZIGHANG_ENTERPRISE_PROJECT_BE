@@ -1,13 +1,11 @@
 package zighang2.zighang.web.dto.tmap;
 
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class GeocodePoint {
-    private double latitude;
-    private double longitude;
+    private final double latitude;
+    private final double longitude;
 
     public GeocodePoint(double latitude, double longitude) {
         this.latitude = latitude;

@@ -5,7 +5,6 @@ import lombok.*;
 import zighang2.zighang.global.common.BaseEntity;
 import zighang2.zighang.web.domain.JobRecommend;
 import zighang2.zighang.web.domain.enums.*;
-import zighang2.zighang.web.dto.UserDto;
 
 import java.util.ArrayList;
 import java.util.List;

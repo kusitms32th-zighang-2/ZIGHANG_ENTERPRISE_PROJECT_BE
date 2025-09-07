@@ -3,6 +3,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import zighang2.zighang.global.payload.code.status.ErrorStatus;
+import zighang2.zighang.global.payload.exception.handler.BadRequestHandler;
+import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
 import zighang2.zighang.global.utils.TimeFormatter;
 import zighang2.zighang.web.dto.tmap.GeocodePoint;
 import zighang2.zighang.web.dto.tmap.response.TmapGeocodingResponseDto;
@@ -60,8 +63,7 @@ public class TmapClient {
                 .onStatus(s -> s.is4xxClientError() || s.is5xxServerError(),
                         resp -> resp.bodyToMono(String.class)
                                 .defaultIfEmpty("")
-                                .map(body -> new IllegalStateException(
-                                        "Tmap geocoding 실패 (" + resp.statusCode() + "): " + body)))
+                                .map(body -> new BadRequestHandler(ErrorStatus.TMAP_GEOCODING_MAPPING_FAILED)))
                 .bodyToMono(TmapGeocodingResponseDto.class)
                 .block();
     }
@@ -82,6 +84,10 @@ public class TmapClient {
                         .build())
                 .bodyValue(Map.of("routesInfo", routesInfo))
                 .retrieve()
+                .onStatus(s -> s.is4xxClientError() || s.is5xxServerError(),
+                        resp -> resp.bodyToMono(String.class)
+                                .defaultIfEmpty("")
+                                .map(body -> new BadRequestHandler(ErrorStatus.TMAP_DRIVING_MAPPING_FAILED)))
                 .bodyToMono(TmapResponseDto.TmapRouteResDto.class)
                 .block();
     }
@@ -94,6 +100,10 @@ public class TmapClient {
                 .uri("transit/routes/sub")
                 .bodyValue(requestBody)
                 .retrieve()
+                .onStatus(s -> s.is4xxClientError() || s.is5xxServerError(),
+                        resp -> resp.bodyToMono(String.class)
+                                .defaultIfEmpty("")
+                                .map(body -> new BadRequestHandler(ErrorStatus.TMAP_TRANSIT_MAPPING_FAILED)))
                 .bodyToMono(TmapResponseDto.TmapTransitResDto.class)
                 .block();
     }
@@ -157,8 +167,9 @@ public class TmapClient {
     }
 
     private void validateGeocodeResponse(TmapGeocodingResponseDto dto) {
-        if (dto == null || dto.getCoordinateInfo() == null || dto.getCoordinateInfo().getCoordinate() == null) {
-            throw new IllegalStateException("지오코딩 응답이 비어 있습니다.");
+        if (dto == null || dto.getCoordinateInfo() == null ||
+                dto.getCoordinateInfo().getCoordinate() == null || dto.getCoordinateInfo().getCoordinate().isEmpty()) {
+            throw new NotFoundHandler(ErrorStatus.TMAP_DRIVING_EMPTY);
         }
     }
 
@@ -166,26 +177,29 @@ public class TmapClient {
         return lat == null || lat.isBlank() || lon == null || lon.isBlank();
     }
 
-    private GeocodePoint tryParseEntrCoordinate(Object coordinate) {
-        String latEntr = ((TmapGeocodingResponseDto.Coordinate) coordinate).getLatEntr();
-        String lonEntr = ((TmapGeocodingResponseDto.Coordinate) coordinate).getLonEntr();
+    private GeocodePoint tryParseEntrCoordinate(TmapGeocodingResponseDto.Coordinate coordinate) {
+        String latEntr = coordinate.getLatEntr();
+        String lonEntr = coordinate.getLonEntr();
 
         if (latEntr != null && !latEntr.isBlank() && lonEntr != null && !lonEntr.isBlank()) {
             return new GeocodePoint(Double.parseDouble(latEntr), Double.parseDouble(lonEntr));
         }
 
-        throw new IllegalStateException("좌표를 찾을 수 없습니다.");
+        throw new NotFoundHandler(ErrorStatus.TMAP_COORDINATE_NOT_FOUND);
     }
 
 
     private Integer extractCarDurationSeconds(TmapResponseDto.TmapRouteResDto res) {
+        if (res == null || res.getFeatures() == null || res.getFeatures().isEmpty()) {
+            throw new NotFoundHandler(ErrorStatus.TMAP_DRIVING_EMPTY);}
+
         return res.getFeatures().stream()
                 .map(TmapResponseDto.TmapRouteResDto.Feature::getProperties)
                 .filter(Objects::nonNull)
                 .map(TmapResponseDto.TmapRouteResDto.Properties::getTotalTime)
                 .filter(Objects::nonNull)
                 .min(Comparator.naturalOrder())
-                .orElseThrow(() -> new IllegalStateException("자동차 경로 응답에서 totalTime을 찾지 못했습니다."));
+                .orElseThrow(() -> new BadRequestHandler(ErrorStatus.TMAP_DRIVING_MAPPING_FAILED));
     }
 
     private Integer extractTransitDurationSeconds(TmapResponseDto.TmapTransitResDto res) {
@@ -195,7 +209,7 @@ public class TmapClient {
                 .map(TmapResponseDto.TmapTransitResDto.Itinerary::getTotalTime)
                 .filter(Objects::nonNull)
                 .min(Integer::compareTo)
-                .orElseThrow(() -> new IllegalStateException("대중교통 요약 응답에서 totalTime을 찾지 못했습니다."));
+                .orElseThrow(() -> new BadRequestHandler(ErrorStatus.TMAP_TRANSIT_MAPPING_FAILED));
     }
 
     private void validateTransitResponse(TmapResponseDto.TmapTransitResDto res) {
@@ -203,7 +217,7 @@ public class TmapClient {
                 res.getMetaData().getPlan() == null ||
                 res.getMetaData().getPlan().getItineraries() == null ||
                 res.getMetaData().getPlan().getItineraries().isEmpty()) {
-            throw new IllegalStateException("대중교통 요약 응답에 itineraries가 없습니다. (경로 없음/매핑 실패 가능)");
+            throw new NotFoundHandler(ErrorStatus.TMAP_TRANSIT_EMPTY);
         }
     }
 

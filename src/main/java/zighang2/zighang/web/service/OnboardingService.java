@@ -25,9 +25,14 @@ public class OnboardingService {
     private final JwtProvider jwtProvider;
     public OnboardingDto.OnboardingResponse getOnboardingCharacter(OnboardingDto.OnboardingRequest request) {
 
-        // 1. 기업규모 카운팅
-        List<String> companyAnswers = List.of(request.getQ1(), request.getQ2(), request.getQ3());
-        Map<String, Long> companyCount = companyAnswers.stream()
+        // 1. 기업규모 카운팅 & 비율 계산 로직
+        List<CompanyType> companyAnswers = List.of(
+                parseCompanyType(request.getQ1()),
+                parseCompanyType(request.getQ2()),
+                parseCompanyType(request.getQ3())
+        );
+
+        Map<CompanyType, Long> companyCount = companyAnswers.stream()
                 .collect(Collectors.groupingBy(ans -> ans, Collectors.counting()));
 
         List<String> companyTypes = Arrays.stream(CompanyType.values())
@@ -49,7 +54,7 @@ public class OnboardingService {
             companyRatio.put(type, scoreMap.get(type) / totalScore);
         }
 
-        String companyTypeFinal = resolveFinal(companyCount, "all");
+        CompanyType companyTypeFinal = resolveFinal(companyCount, CompanyType.MIXED);
 
         // 2. 복지 카운팅
         List<String> welfareAnswers = List.of(request.getQ4(), request.getQ5(), request.getQ6());
@@ -57,18 +62,23 @@ public class OnboardingService {
                 .collect(Collectors.groupingBy(ans -> ans, Collectors.counting()));
         String welfareFinal = resolveFinal(welfareCount, "all");
 
+        // 3. DB에서 캐릭터 조회
+        OnboardingCharacter character = onboardingRepository.findByCompanyTypeAndWelfare(companyTypeFinal.getDisplayName(), welfareFinal)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.CHARACTER_NOT_FOUND));
 
+
+        // 4. 사용자가 선택한 기업 규모, 복지
         List<String> welfareList = welfareAnswers.stream()
                 .distinct()
                 .toList();
 
-        // 3. DB에서 캐릭터 조회
-        OnboardingCharacter character = onboardingRepository.findByCompanyTypeAndWelfare(companyTypeFinal, welfareFinal)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.CHARACTER_NOT_FOUND));
+        List<CompanyType> companyTypeList = companyAnswers.stream()
+                .distinct()
+                .toList();
 
-        // 4. Response DTO 반환
+        // 5. Response DTO 반환
         return OnboardingDto.OnboardingResponse.builder()
-                .companyTypeFinal(companyTypeFinal)
+                .companyTypeList(companyTypeList)
                 .companyRatio(companyRatio)
                 .welfareList(welfareList)
                 .characterId(character.getId())
@@ -76,30 +86,40 @@ public class OnboardingService {
                 .build();
     }
 
-    private String resolveFinal(Map<String, Long> countMap, String fallback) {
-        if (countMap.isEmpty()) return fallback;
+    private <T> T resolveFinal(Map<T, Long> countMap, T fallback) {
+        if (countMap.isEmpty()) return null;
 
         long max = countMap.values().stream()
                 .mapToLong(v -> v)
                 .max()
                 .orElse(0);
 
-        // max 득표인 항목 추출
-        List<String> top = countMap.entrySet().stream()
+        List<T> top = countMap.entrySet().stream()
                 .filter(e -> e.getValue() == max)
                 .map(Map.Entry::getKey)
                 .toList();
 
-        // 동점이 아니면 1등 리턴, 동점이면 fallback
         return top.size() == 1 ? top.get(0) : fallback;
     }
 
-//    public OnboardingDto.OnboardingSignupResponse onboardingSignup(OnboardingDto.OnboardingSignupRequest request) {
-//        // user 확인
-//        User user = userRepository.findById(jwtProvider.getCurrentUserId())
-//                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
-//        // 데이터 저장
-//        user.updateUsersInfo(request.getJobGroup(), );
-//        // redis 저장
-//    }
+    private CompanyType parseCompanyType(String input) {
+        return Arrays.stream(CompanyType.values())
+                .filter(ct -> ct.getDisplayName().equals(input)) // 한글 displayName 매칭
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid company type: " + input));
+    }
+
+    public OnboardingDto.OnboardingSignupResponse onboardingSignup(OnboardingDto.OnboardingSignupRequest request) {
+        // user 확인
+        User user = userRepository.findById(jwtProvider.getCurrentUserId())
+                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
+        // 데이터 저장
+        User.builder().build();
+
+
+
+
+        // redis에 데이터 저장
+        return null;
+    }
 }

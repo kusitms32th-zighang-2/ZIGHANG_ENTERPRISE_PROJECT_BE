@@ -8,8 +8,8 @@ public enum CompanyType {
     FOREIGN("외국계"),
     UNICORN("유니콘"),
     STARTUP("스타트업"),
-    SMALL_MEDIUM("중소기업");
-
+    SMALL_MEDIUM("중소기업"),
+    MIXED("all");
     private final String displayName;
 
 

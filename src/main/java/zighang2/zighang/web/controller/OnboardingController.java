@@ -21,12 +21,12 @@ public class OnboardingController {
         return ApiResponse.onSuccess(onboardingService.getOnboardingCharacter(request));
     }
 
-//    @Operation(summary = "온보딩 이후 회원가입 API", description = "온보딩 이후, 유저의 회원가입을 하는 API입니다.")
-//    @PostMapping("/signup")
-//    public ApiResponse<OnboardingDto.OnboardingSignupResponse> OnboardingSignup(@RequestBody OnboardingDto.OnboardingSignupRequest request) {
-//        return ApiResponse.onSuccess(onboardingService.onboardingSignup(request));
-//
-//    }
+    @Operation(summary = "온보딩 이후 회원가입 API", description = "온보딩 이후, 유저의 회원가입을 하는 API입니다.")
+    @PostMapping("/signup")
+    public ApiResponse<OnboardingDto.OnboardingSignupResponse> OnboardingSignup(@RequestBody OnboardingDto.OnboardingSignupRequest request) {
+        return ApiResponse.onSuccess(onboardingService.onboardingSignup(request));
+
+    }
 
 
 

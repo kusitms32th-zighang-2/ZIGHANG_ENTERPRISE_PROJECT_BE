@@ -3,10 +3,7 @@ package zighang2.zighang.web.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import zighang2.zighang.web.domain.enums.Education;
-import zighang2.zighang.web.domain.enums.JobGroup;
-import zighang2.zighang.web.domain.enums.JobPosition;
-import zighang2.zighang.web.domain.enums.Transport;
+import zighang2.zighang.web.domain.enums.*;
 
 import java.sql.Time;
 import java.util.List;
@@ -31,7 +28,7 @@ public class OnboardingDto {
     @AllArgsConstructor
     @Builder
     public static class OnboardingResponse {
-        private String companyTypeFinal;
+        private List<CompanyType> companyTypeList;
         private Map<String, Double> companyRatio;
         private List<String> welfareList;
         private Long characterId;
@@ -51,7 +48,7 @@ public class OnboardingDto {
 
         // ==== 온보딩 정보 ====
         private Long characterId;
-        private String companyTypeFinal;
+        private List<CompanyType> companyTypeList;
         private List<String> welfareList; // redis
         private Map<String, Double> companyRatio; // redis
 

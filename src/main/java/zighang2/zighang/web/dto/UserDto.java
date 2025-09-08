@@ -39,6 +39,9 @@ public class UserDto {
         private CompanyType companyType;
         private Education education;
         private String workExperience;
+        private String address;
+        private Transport transport;
+        private Integer maxCommuteMinutes;
         private String receivingEmail;
 
         public static MypageModifyDto of(User user) {
@@ -46,8 +49,12 @@ public class UserDto {
                     .companyType(user.getCompanyType())
                     .jobGroup(user.getJobGroup())
                     .jobPosition(user.getJobPosition())
+                    .companyType(user.getCompanyType())
                     .education(user.getEducation())
                     .workExperience(user.getWorkExperience())
+                    .address(user.getAddress())
+                    .transport(user.getTransport())
+                    .maxCommuteMinutes(user.getMaxCommuteMinutes())
                     .receivingEmail(user.getReceivingEmail())
                     .build();
 

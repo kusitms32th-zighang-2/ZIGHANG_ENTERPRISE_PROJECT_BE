@@ -1,7 +1,5 @@
 package zighang2.zighang.web.domain.enums;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 public enum JobGroup {
     전체("전체"),
     IT_개발("IT/개발"),
@@ -36,7 +34,6 @@ public enum JobGroup {
         this.display = display;
     }
 
-    @JsonValue
     public String getDisplay() {
         return display;
     }

@@ -1,7 +1,5 @@
 package zighang2.zighang.web.domain.enums;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 public enum RecruitmentType {
     FULL_TIME("정규직"),
     CONTRACT("계약직"),
@@ -17,7 +15,6 @@ public enum RecruitmentType {
         this.displayName = displayName;
     }
 
-    @JsonValue
     public String getDisplayName() {
         return displayName;
     }

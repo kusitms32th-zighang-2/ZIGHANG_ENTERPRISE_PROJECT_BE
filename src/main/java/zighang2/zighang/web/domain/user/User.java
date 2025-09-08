@@ -49,10 +49,11 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private JobPosition jobPosition;
 
-    @Column(length = 50)
+
+    @Enumerated(EnumType.STRING)
     private CompanyType companyType;
 
-    @Column(length = 50)
+    @Enumerated(EnumType.STRING)
     private Education education;
 
     @Column(length = 50)
@@ -68,12 +69,23 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<JobRecommend> jobRecommendList= new ArrayList<>();
 
-    public void updateUsersInfo(JobGroup jobGroup, JobPosition jobPosition, CompanyType companyType, Education education, String workExperience, String receivingEmail) {
+    public void updateUsersInfo(JobGroup jobGroup,
+                                JobPosition jobPosition,
+                                CompanyType companyType,
+                                Education education,
+                                String workExperience,
+                                String address,
+                                Transport transport,
+                                Integer maxCommuteMinutes,
+                                String receivingEmail) {
         if (jobGroup != null) this.jobGroup = jobGroup;
         if (jobPosition != null) this.jobPosition = jobPosition;
         if (companyType != null) this.companyType = companyType;
         if (education != null) this.education = education;
         if (workExperience != null) this.workExperience = workExperience.trim();
+        if (address != null) this.address = address.trim();
+        if (transport != null) this.transport = transport;
+        if (maxCommuteMinutes != null) this.maxCommuteMinutes = maxCommuteMinutes;
         if (receivingEmail != null) this.receivingEmail = receivingEmail.trim();
     }
 

@@ -1,7 +1,5 @@
 package zighang2.zighang.web.domain.enums;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 public enum Education {
     IRRELEVANT("무관"),
     HIGH_SCHOOL("고졸"),
@@ -16,7 +14,6 @@ public enum Education {
         this.displayName = displayName;
     }
 
-    @JsonValue
     public String getDisplayName() {
         return displayName;
     }

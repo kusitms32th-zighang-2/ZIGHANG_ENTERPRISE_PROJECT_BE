@@ -29,8 +29,11 @@ public class UserService {
                 mypageModifyDto.getCompanyType(),
                 mypageModifyDto.getEducation(),
                 mypageModifyDto.getWorkExperience(),
-                mypageModifyDto.getReceivingEmail());
-        userRepository.save(user);
+                mypageModifyDto.getAddress(),
+                mypageModifyDto.getTransport(),
+                mypageModifyDto.getMaxCommuteMinutes(),
+                mypageModifyDto.getReceivingEmail()
+        );
 
         return UserDto.MypageModifyDto.of(user);
     }

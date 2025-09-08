@@ -8,6 +8,7 @@ public enum CompanyType {
     STARTUP("스타트업"),
     SMALL_MEDIUM("중소기업"),
     MIXED("all");
+
     private final String displayName;
 
 

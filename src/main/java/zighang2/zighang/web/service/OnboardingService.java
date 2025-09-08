@@ -35,22 +35,22 @@ public class OnboardingService {
         Map<CompanyType, Long> companyCount = companyAnswers.stream()
                 .collect(Collectors.groupingBy(ans -> ans, Collectors.counting()));
 
-        List<String> companyTypes = Arrays.stream(CompanyType.values())
-                .map(CompanyType::getDisplayName)
+        List<CompanyType> companyTypes = Arrays.stream(CompanyType.values())
+                .filter(ct -> ct != CompanyType.MIXED)
                 .toList();
 
-        Map<String, Double> companyRatio = new LinkedHashMap<>();
+        Map<CompanyType, Double> companyRatio = new LinkedHashMap<>();
         int baseScore = 1;
         double totalScore = 0.0;
 
-        Map<String, Integer> scoreMap = new HashMap<>();
-        for (String type : companyTypes) {
+        Map<CompanyType, Integer> scoreMap = new HashMap<>();
+        for (CompanyType type : companyTypes) {
             int score = baseScore + companyCount.getOrDefault(type, 0L).intValue();
             scoreMap.put(type, score);
             totalScore += score;
         }
 
-        for (String type : companyTypes) {
+        for (CompanyType type : companyTypes) {
             companyRatio.put(type, scoreMap.get(type) / totalScore);
         }
 
@@ -82,7 +82,7 @@ public class OnboardingService {
                 .companyRatio(companyRatio)
                 .welfareList(welfareList)
                 .characterId(character.getId())
-                .characterName(character.getCharacterName())
+                .characterName(character.getCharacterName().getDisplayName())
                 .build();
     }
 

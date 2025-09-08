@@ -29,7 +29,7 @@ public class OnboardingDto {
     @Builder
     public static class OnboardingResponse {
         private List<CompanyType> companyTypeList;
-        private Map<String, Double> companyRatio;
+        private Map<CompanyType, Double> companyRatio;
         private List<String> welfareList;
         private Long characterId;
         private String characterName;

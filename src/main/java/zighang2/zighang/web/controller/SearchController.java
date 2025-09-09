@@ -13,8 +13,8 @@ public class SearchController {
 
     private final SearchService searchService;
 
-    @PostMapping
-    public List<SearchResponse> search(@RequestBody SearchRequest request) {
-        return searchService.search(request.getQuery());
-    }
+//    @PostMapping
+//    public List<SearchResponse> search(@RequestBody SearchRequest request) {
+//        return searchService.search(request.getQuery());
+//    }
 }

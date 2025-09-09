@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import zighang2.zighang.web.domain.enums.*;
 import zighang2.zighang.web.domain.user.User;
 
+import java.util.List;
+
 import static lombok.AccessLevel.PROTECTED;
 
 @Getter
@@ -26,16 +28,16 @@ public class UserDto {
         private Long id;
         private String email;
         private String name;
-        private MypageModifyDto myPageModifyDto;
+        private MypageModifyResponse MypageModifyResponse;
     }
 
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor(access = PROTECTED)
-    public static class MypageModifyDto {
-        private JobGroup jobGroup;
-        private JobPosition jobPosition;
+    public static class MypageModifyRequest {
+        private JobGroupEnum jobGroups;
+        private List<JobPositionEnum> jobPositions;
         private CompanyType companyType;
         private Education education;
         private String workExperience;
@@ -44,16 +46,36 @@ public class UserDto {
         private Integer maxCommuteMinutes;
         private String receivingEmail;
 
-        public static MypageModifyDto of(User user) {
-            return MypageModifyDto.builder()
-                    .companyType(user.getCompanyType())
-                    .jobGroup(user.getJobGroup())
-                    .jobPosition(user.getJobPosition())
-                    .companyType(user.getCompanyType())
-                    .education(user.getEducation())
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor(access = PROTECTED)
+    public static class MypageModifyResponse {
+        private String jobGroups;
+        private List<String> jobPositions;
+        private String companyType;
+        private String education;
+        private String workExperience;
+        private String address;
+        private String transport;
+        private Integer maxCommuteMinutes;
+        private String receivingEmail;
+
+        public static MypageModifyResponse of(User user) {
+            return MypageModifyResponse.builder()
+                    .companyType(user.getCompanyType().getDisplayName())
+                    .jobGroups(user.getJobGroup().getJobGroupName().getDisplay())
+                    .jobPositions(
+                            user.getUserJobPositions().stream()
+                                    .map(up -> up.getJobPosition().getJobPositionName().getDisplay())
+                                    .toList()
+                    )                    .companyType(user.getCompanyType().getDisplayName())
+                    .education(user.getEducation().getDisplayName())
                     .workExperience(user.getWorkExperience())
                     .address(user.getAddress())
-                    .transport(user.getTransport())
+                    .transport(String.valueOf(user.getTransport()))
                     .maxCommuteMinutes(user.getMaxCommuteMinutes())
                     .receivingEmail(user.getReceivingEmail())
                     .build();

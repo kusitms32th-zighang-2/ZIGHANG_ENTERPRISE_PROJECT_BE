@@ -40,8 +40,8 @@ public class OnboardingDto {
     public static class OnboardingSignupRequest {
         private String workExperience;
         private Education education;
-        private JobGroup jobGroup;
-        private JobPosition jobPosition;
+        private JobGroupEnum jobGroupEnum;
+        private JobPositionEnum jobPositionEnum;
         private Time maxCommuteMinutes;
         private Transport transport;
         private String address;

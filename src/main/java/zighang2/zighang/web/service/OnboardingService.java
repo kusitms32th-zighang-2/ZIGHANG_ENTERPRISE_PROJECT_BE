@@ -7,7 +7,7 @@ import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.GeneralException;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
 import zighang2.zighang.web.domain.enums.CompanyType;
-import zighang2.zighang.web.domain.user.OnboardingCharacter;
+import zighang2.zighang.web.domain.OnboardingCharacter;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.dto.OnboardingDto;
 import zighang2.zighang.web.repository.OnboardingRepository;

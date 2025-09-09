@@ -2,7 +2,7 @@ package zighang2.zighang.web.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import zighang2.zighang.web.domain.user.OnboardingCharacter;
+import zighang2.zighang.web.domain.OnboardingCharacter;
 
 import java.util.Optional;
 

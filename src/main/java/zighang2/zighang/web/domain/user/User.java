@@ -3,7 +3,9 @@ package zighang2.zighang.web.domain.user;
 import jakarta.persistence.*;
 import lombok.*;
 import zighang2.zighang.global.common.BaseEntity;
+import zighang2.zighang.web.domain.JobGroup;
 import zighang2.zighang.web.domain.JobRecommend;
+import zighang2.zighang.web.domain.OnboardingCharacter;
 import zighang2.zighang.web.domain.enums.*;
 
 import java.util.ArrayList;
@@ -44,13 +46,6 @@ public class User extends BaseEntity {
     private UserRole userRole;
 
     @Enumerated(EnumType.STRING)
-    private JobGroup jobGroup;
-
-    @Enumerated(EnumType.STRING)
-    private JobPosition jobPosition;
-
-
-    @Enumerated(EnumType.STRING)
     private CompanyType companyType;
 
     @Enumerated(EnumType.STRING)
@@ -69,8 +64,14 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<JobRecommend> jobRecommendList= new ArrayList<>();
 
-    public void updateUsersInfo(JobGroup jobGroup,
-                                JobPosition jobPosition,
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserJobPosition> userJobPositions = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "job_group_id")
+    private JobGroup jobGroup;
+
+    public void updateUsersInfo(
                                 CompanyType companyType,
                                 Education education,
                                 String workExperience,
@@ -78,8 +79,6 @@ public class User extends BaseEntity {
                                 Transport transport,
                                 Integer maxCommuteMinutes,
                                 String receivingEmail) {
-        if (jobGroup != null) this.jobGroup = jobGroup;
-        if (jobPosition != null) this.jobPosition = jobPosition;
         if (companyType != null) this.companyType = companyType;
         if (education != null) this.education = education;
         if (workExperience != null) this.workExperience = workExperience.trim();
@@ -89,4 +88,8 @@ public class User extends BaseEntity {
         if (receivingEmail != null) this.receivingEmail = receivingEmail.trim();
     }
 
+    public void updateUsersJobGroup(JobGroup jobGroup) {
+        if (jobGroup != null) this.jobGroup = jobGroup;
+
+    }
 }

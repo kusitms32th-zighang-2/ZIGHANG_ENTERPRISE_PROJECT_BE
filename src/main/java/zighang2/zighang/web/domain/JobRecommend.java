@@ -9,13 +9,18 @@ import zighang2.zighang.global.common.BaseEntity;
 import zighang2.zighang.web.domain.enums.*;
 import zighang2.zighang.web.domain.user.User;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Builder
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+
 public class JobRecommend extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "job_recommend_id")
     private Long id;
 
     @Column(length = 100)
@@ -42,11 +47,11 @@ public class JobRecommend extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RecruitmentType recruitmentType;
 
-    @Enumerated(EnumType.STRING)
-    private JobGroupEnum depth1;
+    @OneToMany(mappedBy = "jobRecommend")
+    private List<JobPostingJobPosition> jobPostingJobPositions = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
-    private JobPositionEnum depth2;
+    @OneToMany(mappedBy = "jobRecommend")
+    private List<JobPostingJobGroup> jobPostingJobGroups = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

@@ -30,4 +30,7 @@ public class JobGroup extends BaseEntity {
 
     @OneToMany(mappedBy = "jobGroup")
     private List<JobPosition> jobPositions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "jobGroup")
+    private List<JobPostingJobGroup> jobPostingJobGroups = new ArrayList<>();
 }

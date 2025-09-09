@@ -1,6 +1,10 @@
 package zighang2.zighang.web.domain.enums;
 
-public enum JobPosition {
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import zighang2.zighang.global.payload.code.status.ErrorStatus;
+
+public enum JobPositionEnum {
     // IT·개발
     서버_백엔드("서버·백엔드"),
     프론트엔드("프론트엔드"),
@@ -362,11 +366,12 @@ public enum JobPosition {
 
     private final String display;
 
-    JobPosition(String display) {
+    JobPositionEnum(String display) {
         this.display = display;
     }
 
     public String getDisplay() {
         return display;
     }
+
 }

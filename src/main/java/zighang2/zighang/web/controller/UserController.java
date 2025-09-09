@@ -16,7 +16,7 @@ public class UserController {
 
     @Operation(summary = "마이페이지 수정 API", description = "마이페이지 수정 API입니다.")
     @PatchMapping("/my-page")
-    public ApiResponse<UserDto.MypageModifyDto> modifyUsersInfo(@Valid @RequestBody UserDto.MypageModifyDto mypageDto) {
+    public ApiResponse<UserDto.MypageModifyResponse> modifyUsersInfo(@Valid @RequestBody UserDto.MypageModifyRequest mypageDto) {
         return ApiResponse.onSuccess(userService.modifyUserInfo(mypageDto));
     }
 

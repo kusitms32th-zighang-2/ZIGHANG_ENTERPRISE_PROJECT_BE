@@ -43,10 +43,10 @@ public class JobRecommend extends BaseEntity {
     private RecruitmentType recruitmentType;
 
     @Enumerated(EnumType.STRING)
-    private JobGroup depth1;
+    private JobGroupEnum depth1;
 
     @Enumerated(EnumType.STRING)
-    private JobPosition depth2;
+    private JobPositionEnum depth2;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

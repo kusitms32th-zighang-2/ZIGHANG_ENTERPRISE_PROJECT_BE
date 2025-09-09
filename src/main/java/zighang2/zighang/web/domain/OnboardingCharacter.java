@@ -1,10 +1,11 @@
-package zighang2.zighang.web.domain.user;
+package zighang2.zighang.web.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import zighang2.zighang.global.common.BaseEntity;
+import zighang2.zighang.web.domain.enums.CharacterName;
+import zighang2.zighang.web.domain.user.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +18,8 @@ public class OnboardingCharacter extends BaseEntity {
     @Column(name = "character_id")
     private Long id;
 
-    @Column(name = "character_name", length = 20)
-    private String characterName;
+    @Enumerated(EnumType.STRING)
+    private CharacterName characterName;
 
     @Column(name = "company_type", length = 20)
     private String companyType;

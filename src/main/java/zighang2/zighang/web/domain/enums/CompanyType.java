@@ -4,9 +4,10 @@ public enum CompanyType {
     MAJOR("대기업"),
     MID_SIZE("중견기업"),
     FOREIGN("외국계"),
-    UNICORN("유니콘 스타트업"),
+    UNICORN("유니콘"),
     STARTUP("스타트업"),
-    SMALL_MEDIUM("중소기업");
+    SMALL_MEDIUM("중소기업"),
+    MIXED("all");
 
     private final String displayName;
 

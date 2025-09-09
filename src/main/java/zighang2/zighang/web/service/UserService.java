@@ -12,6 +12,7 @@ import zighang2.zighang.web.domain.JobPosition;
 import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
 import zighang2.zighang.web.domain.enums.JobPositionEnum;
 import zighang2.zighang.web.domain.user.User;
+import zighang2.zighang.web.domain.user.UserCompanyType;
 import zighang2.zighang.web.domain.user.UserJobPosition;
 import zighang2.zighang.web.dto.UserDto;
 import zighang2.zighang.web.repository.*;
@@ -30,6 +31,7 @@ public class UserService {
     private final JobPositionRepository jobPositionRepository;
     private final UserJobPositionRepository userJobPositionRepository;
     private final CompanyTypeRepository companyTypeRepository;
+    private final UserCompanyTypeRepository userCompanyTypeRepository;
 
     @Transactional
     public UserDto.MypageModifyResponse modifyUserInfo(UserDto.MypageModifyRequest mypageModifyRequest) {
@@ -70,15 +72,23 @@ public class UserService {
             }
         }
 
+        List<UserCompanyType> companyTypeExisting = userCompanyTypeRepository.findByUserId(user.getId());
         Set<CompanyTypeEnum> newCompanyTypes = new HashSet<>(mypageModifyRequest.getCompanyTypes());
 
         for (CompanyTypeEnum companyTypeEnum : newCompanyTypes) {
-            CompanyType companyType = CompanyType.builder()
-                    .user(user)
-                    .companyType(companyTypeEnum)
-                    .build();
+            boolean alreadyExists = companyTypeExisting.stream()
+                    .anyMatch(uct -> uct.getCompanyType().getCompanyTypeName().equals(companyTypeEnum));
 
-            companyTypeRepository.save(companyType);
+            if (!alreadyExists) {
+                CompanyType companyType = companyTypeRepository.findByCompanyTypeName(companyTypeEnum)
+                        .orElseThrow(()->new NotFoundHandler(ErrorStatus.COMPANYTYPE_NOT_FOUND));
+
+                UserCompanyType uct = UserCompanyType.builder()
+                        .user(user)
+                        .companyType(companyType)
+                        .build();
+                userCompanyTypeRepository.save(uct);
+            }
         }
 
         user.updateUsersInfo(
@@ -103,8 +113,8 @@ public class UserService {
                 .map(ujp -> ujp.getJobPosition().getJobPositionName().getDisplay())
                 .toList();
 
-        List<String> companyTypes = user.getCompanyTypeList().stream()
-                .map(companyType -> companyType.getCompanyType().getDisplay())
+        List<String> companyTypes = user.getUserCompanyTypes().stream()
+                .map(uct-> uct.getCompanyType().getCompanyTypeName().getDisplay())
                 .toList();
 
         UserDto.MypageModifyResponse modifyResponse = UserDto.MypageModifyResponse.builder()

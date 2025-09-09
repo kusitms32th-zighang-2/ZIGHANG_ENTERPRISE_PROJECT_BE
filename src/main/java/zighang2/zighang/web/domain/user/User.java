@@ -46,7 +46,6 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
-
     @Enumerated(EnumType.STRING)
     private Education education;
 
@@ -67,7 +66,7 @@ public class User extends BaseEntity {
     private List<UserJobPosition> userJobPositions = new ArrayList<>();
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
-    private List<CompanyType> companyTypeList = new ArrayList<>();
+    private List<UserCompanyType> userCompanyTypes = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "job_group_id")

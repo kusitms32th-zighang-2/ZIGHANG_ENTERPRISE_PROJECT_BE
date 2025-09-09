@@ -42,7 +42,7 @@ public class OnboardingDto {
         private Education education;
         private JobGroupEnum jobGroupEnum;
         private JobPositionEnum jobPositionEnum;
-        private Time maxCommuteMinutes;
+        private Integer maxCommuteMinutes;
         private Transport transport;
         private String address;
 

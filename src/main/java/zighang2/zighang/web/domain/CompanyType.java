@@ -7,7 +7,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import zighang2.zighang.global.common.BaseEntity;
 import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
-import zighang2.zighang.web.domain.user.User;
+import zighang2.zighang.web.domain.user.UserCompanyType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Builder
@@ -21,9 +24,9 @@ public class CompanyType extends BaseEntity{
 
     @Enumerated(EnumType.STRING)
     @Column(name = "company_type_name")
-    private CompanyTypeEnum companyType;
+    private CompanyTypeEnum companyTypeName;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @OneToMany(mappedBy = "companyType")
+    private List<UserCompanyType> userCompanyTypes = new ArrayList<>();
+
 }

@@ -66,8 +66,8 @@ public class UserDto {
         public static MypageModifyResponse of(User user) {
             return MypageModifyResponse.builder()
                     .companyTypes(
-                            user.getCompanyTypeList().stream()
-                                    .map(ct -> ct.getCompanyType().getDisplay())
+                            user.getUserCompanyTypes().stream()
+                                    .map(uct -> uct.getCompanyType().getCompanyTypeName().getDisplay())
                                     .toList()
                     )
                     .jobGroups(user.getJobGroup().getJobGroupName().getDisplay())

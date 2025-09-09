@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import zighang2.zighang.global.common.BaseEntity;
 import zighang2.zighang.web.domain.CompanyType;
-import zighang2.zighang.web.domain.JobPosition;
 
 @Entity
 @NoArgsConstructor

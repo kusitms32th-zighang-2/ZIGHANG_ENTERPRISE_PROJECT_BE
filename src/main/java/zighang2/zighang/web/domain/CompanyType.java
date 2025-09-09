@@ -26,7 +26,7 @@ public class CompanyType extends BaseEntity{
     @Column(name = "company_type_name")
     private CompanyTypeEnum companyTypeName;
 
-    @OneToMany(mappedBy = "companyType")
+    @OneToMany(mappedBy = "companyType", orphanRemoval=true)
     private List<UserCompanyType> userCompanyTypes = new ArrayList<>();
 
 }

@@ -20,6 +20,7 @@ import zighang2.zighang.web.repository.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +52,7 @@ public class UserService {
         for (UserJobPosition ujp : existing) {
             if (!newPositions.contains(ujp.getJobPosition().getJobPositionName())) {
                 userJobPositionRepository.delete(ujp);
+                userJobPositionRepository.flush();
             }
         }
 
@@ -72,8 +74,18 @@ public class UserService {
             }
         }
 
+
+
         List<UserCompanyType> companyTypeExisting = userCompanyTypeRepository.findByUserId(user.getId());
         Set<CompanyTypeEnum> newCompanyTypes = new HashSet<>(mypageModifyRequest.getCompanyTypes());
+
+        for (UserCompanyType uct : companyTypeExisting) {
+            if (!newCompanyTypes.contains(uct.getCompanyType().getCompanyTypeName())) {
+                userCompanyTypeRepository.delete(uct);
+                userCompanyTypeRepository.flush();
+            }
+        }
+
 
         for (CompanyTypeEnum companyTypeEnum : newCompanyTypes) {
             boolean alreadyExists = companyTypeExisting.stream()

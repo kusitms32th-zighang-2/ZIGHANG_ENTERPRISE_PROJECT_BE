@@ -27,7 +27,7 @@ public class JobPosition extends BaseEntity {
     @JoinColumn(name = "job_group_id")
     private JobGroup jobGroup;
 
-    @OneToMany(mappedBy = "jobPosition")
+    @OneToMany(mappedBy = "jobPosition", orphanRemoval=true)
     private List<UserJobPosition> userJobPositions = new ArrayList<>();
 
 

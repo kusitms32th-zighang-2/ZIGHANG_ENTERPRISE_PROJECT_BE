@@ -46,9 +46,6 @@ public class User extends BaseEntity {
     private UserRole userRole;
 
     @Enumerated(EnumType.STRING)
-    private CompanyType companyType;
-
-    @Enumerated(EnumType.STRING)
     private Education education;
 
     @Column(length = 50)
@@ -67,19 +64,20 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserJobPosition> userJobPositions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<UserCompanyType> userCompanyTypes = new ArrayList<>();
+
     @ManyToOne
     @JoinColumn(name = "job_group_id")
     private JobGroup jobGroup;
 
     public void updateUsersInfo(
-                                CompanyType companyType,
                                 Education education,
                                 String workExperience,
                                 String address,
                                 Transport transport,
                                 Integer maxCommuteMinutes,
                                 String receivingEmail) {
-        if (companyType != null) this.companyType = companyType;
         if (education != null) this.education = education;
         if (workExperience != null) this.workExperience = workExperience.trim();
         if (address != null) this.address = address.trim();

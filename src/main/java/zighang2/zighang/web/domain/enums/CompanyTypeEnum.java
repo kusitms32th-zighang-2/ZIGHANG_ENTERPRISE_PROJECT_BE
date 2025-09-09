@@ -1,6 +1,6 @@
 package zighang2.zighang.web.domain.enums;
 
-public enum CompanyType {
+public enum CompanyTypeEnum {
     MAJOR("대기업"),
     MID_SIZE("중견기업"),
     FOREIGN("외국계"),
@@ -9,19 +9,19 @@ public enum CompanyType {
     SMALL_MEDIUM("중소기업"),
     MIXED("all");
 
-    private final String displayName;
+    private final String display;
 
 
-    CompanyType(String displayName) {
-        this.displayName = displayName;
+    CompanyTypeEnum(String display) {
+        this.display = display;
     }
 
-    public String getDisplayName() {
-        return displayName;
+    public String getDisplay() {
+        return display;
     }
 
     @Override
     public String toString() {
-        return displayName;
+        return display;
     }
 }

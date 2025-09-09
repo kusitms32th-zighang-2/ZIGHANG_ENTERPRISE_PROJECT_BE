@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import zighang2.zighang.web.domain.enums.*;
-
-import java.sql.Time;
 import java.util.List;
 import java.util.Map;
 
@@ -28,8 +26,8 @@ public class OnboardingDto {
     @AllArgsConstructor
     @Builder
     public static class OnboardingResponse {
-        private List<CompanyType> companyTypeList;
-        private Map<CompanyType, Double> companyRatio;
+        private List<CompanyTypeEnum> companyTypeEnumList;
+        private Map<CompanyTypeEnum, Double> companyRatio;
         private List<String> welfareList;
         private Long characterId;
         private String characterName;
@@ -42,13 +40,13 @@ public class OnboardingDto {
         private Education education;
         private JobGroupEnum jobGroupEnum;
         private JobPositionEnum jobPositionEnum;
-        private Time maxCommuteMinutes;
+        private Integer maxCommuteMinutes;
         private Transport transport;
         private String address;
 
         // ==== 온보딩 정보 ====
         private Long characterId;
-        private List<CompanyType> companyTypeList;
+        private List<CompanyTypeEnum> companyTypeEnumList;
         private List<String> welfareList; // redis
         private Map<String, Double> companyRatio; // redis
 

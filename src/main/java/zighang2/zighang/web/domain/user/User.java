@@ -3,7 +3,6 @@ package zighang2.zighang.web.domain.user;
 import jakarta.persistence.*;
 import lombok.*;
 import zighang2.zighang.global.common.BaseEntity;
-import zighang2.zighang.web.domain.CompanyType;
 import zighang2.zighang.web.domain.JobGroup;
 import zighang2.zighang.web.domain.JobRecommend;
 import zighang2.zighang.web.domain.OnboardingCharacter;

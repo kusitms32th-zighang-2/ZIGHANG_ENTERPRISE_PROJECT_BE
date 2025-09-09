@@ -21,10 +21,10 @@ public enum ErrorStatus implements BaseErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_1002", "해당하는 사용자가 존재하지 않습니다."),
     NICKNAME_NOT_EXIST(HttpStatus.BAD_REQUEST, "USER_1003", "닉네임은 필수 입니다."),
     EMAIL_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "USER_1004", "이미 존재하는 이메일 입니다."),
-    ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND,"USER_1005","사용자의 주소를 찾을 수 없습니다."),
-    TRANSPORT_NOT_FOUND(HttpStatus.NOT_FOUND,"USER_1006","사용자의 교통수단을 찾을 수 없습니다."),
+    ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND,"ADDRESS_1005","사용자의 주소를 찾을 수 없습니다."),
+    TRANSPORT_NOT_FOUND(HttpStatus.NOT_FOUND,"TRANSPORT_1006","사용자의 교통수단을 찾을 수 없습니다."),
     INVALID_TRANSPORT(HttpStatus.BAD_REQUEST,"USER_1007","지원하지않는 교통수단입니다."),
-    MAXCOMMUTE_NOT_FOUND(HttpStatus.NOT_FOUND,"USER_1008","사용자의 최대 통근 시간을 찾을 수 없습니다."),
+    MAXCOMMUTE_NOT_FOUND(HttpStatus.NOT_FOUND,"MAXCOMMUTE_1008","사용자의 최대 통근 시간을 찾을 수 없습니다."),
     INVALID_VALUE(HttpStatus.BAD_REQUEST, "USER1101", "유효하지 않은 입력값입니다."),
 
 
@@ -52,7 +52,10 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // JOB 관련 에러 6000
     JOBGROUP_NOT_FOUND(HttpStatus.NOT_FOUND, "JOBGROUP_6001", "해당하는 직군이 존재하지 않습니다."),
-    JOBPOSITION_NOT_FOUND(HttpStatus.NOT_FOUND, "JOBPOSITION_6002", "해당하는 직무가 존재하지 않습니다.")
+    JOBPOSITION_NOT_FOUND(HttpStatus.NOT_FOUND, "JOBPOSITION_6002", "해당하는 직무가 존재하지 않습니다."),
+
+    //COMPANYTYPE 관련 에러 7000
+    COMPANYTYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "COMPANYTYPE_7001","해당하는 기업 유형이 존재하지 않습니다.")
 ;
 
 

@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import zighang2.zighang.web.domain.enums.CompanyType;
+import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
 import zighang2.zighang.web.domain.JobRecommend;
 
 public class JobRecommendDto {
@@ -20,7 +20,7 @@ public class JobRecommendDto {
         @Schema(description = "회사명", example = "직행")
         private String company;
         @Schema(description = "기업 유형", example = "STARTUP")
-        private CompanyType companyType;
+        private CompanyTypeEnum companyTypeEnum;
         @Schema(description = "채용 주소", example = "서울특별시 00구 00대로 123")
         private String address;
 

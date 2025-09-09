@@ -6,16 +6,15 @@ import org.springframework.transaction.annotation.Transactional;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
+import zighang2.zighang.web.domain.CompanyType;
 import zighang2.zighang.web.domain.JobGroup;
 import zighang2.zighang.web.domain.JobPosition;
+import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
 import zighang2.zighang.web.domain.enums.JobPositionEnum;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.domain.user.UserJobPosition;
 import zighang2.zighang.web.dto.UserDto;
-import zighang2.zighang.web.repository.JobGroupRepository;
-import zighang2.zighang.web.repository.JobPositionRepository;
-import zighang2.zighang.web.repository.UserJobPositionRepository;
-import zighang2.zighang.web.repository.UserRepository;
+import zighang2.zighang.web.repository.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +29,8 @@ public class UserService {
     private final JobGroupRepository jobGroupRepository;
     private final JobPositionRepository jobPositionRepository;
     private final UserJobPositionRepository userJobPositionRepository;
+    private final CompanyTypeRepository companyTypeRepository;
+
     @Transactional
     public UserDto.MypageModifyResponse modifyUserInfo(UserDto.MypageModifyRequest mypageModifyRequest) {
         Long userId = jwtProvider.getCurrentUserId();
@@ -69,8 +70,18 @@ public class UserService {
             }
         }
 
+        Set<CompanyTypeEnum> newCompanyTypes = new HashSet<>(mypageModifyRequest.getCompanyTypes());
+
+        for (CompanyTypeEnum companyTypeEnum : newCompanyTypes) {
+            CompanyType companyType = CompanyType.builder()
+                    .user(user)
+                    .companyType(companyTypeEnum)
+                    .build();
+
+            companyTypeRepository.save(companyType);
+        }
+
         user.updateUsersInfo(
-                mypageModifyRequest.getCompanyType(),
                 mypageModifyRequest.getEducation(),
                 mypageModifyRequest.getWorkExperience(),
                 mypageModifyRequest.getAddress(),
@@ -92,10 +103,14 @@ public class UserService {
                 .map(ujp -> ujp.getJobPosition().getJobPositionName().getDisplay())
                 .toList();
 
+        List<String> companyTypes = user.getCompanyTypeList().stream()
+                .map(companyType -> companyType.getCompanyType().getDisplay())
+                .toList();
+
         UserDto.MypageModifyResponse modifyResponse = UserDto.MypageModifyResponse.builder()
                 .jobGroups(user.getJobGroup().getJobGroupName().getDisplay())
                 .jobPositions(jobPositions)
-                .companyType(user.getCompanyType().getDisplayName())
+                .companyTypes(companyTypes)
                 .education(user.getEducation().getDisplayName())
                 .workExperience(user.getWorkExperience())
                 .address(user.getAddress())

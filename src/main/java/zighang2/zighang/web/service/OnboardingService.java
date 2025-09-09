@@ -6,7 +6,7 @@ import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.GeneralException;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
-import zighang2.zighang.web.domain.enums.CompanyType;
+import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
 import zighang2.zighang.web.domain.OnboardingCharacter;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.dto.OnboardingDto;
@@ -26,35 +26,35 @@ public class OnboardingService {
     public OnboardingDto.OnboardingResponse getOnboardingCharacter(OnboardingDto.OnboardingRequest request) {
 
         // 1. 기업규모 카운팅 & 비율 계산 로직
-        List<CompanyType> companyAnswers = List.of(
+        List<CompanyTypeEnum> companyAnswers = List.of(
                 parseCompanyType(request.getQ1()),
                 parseCompanyType(request.getQ2()),
                 parseCompanyType(request.getQ3())
         );
 
-        Map<CompanyType, Long> companyCount = companyAnswers.stream()
+        Map<CompanyTypeEnum, Long> companyCount = companyAnswers.stream()
                 .collect(Collectors.groupingBy(ans -> ans, Collectors.counting()));
 
-        List<CompanyType> companyTypes = Arrays.stream(CompanyType.values())
-                .filter(ct -> ct != CompanyType.MIXED)
+        List<CompanyTypeEnum> companyTypeEnums = Arrays.stream(CompanyTypeEnum.values())
+                .filter(ct -> ct != CompanyTypeEnum.MIXED)
                 .toList();
 
-        Map<CompanyType, Double> companyRatio = new LinkedHashMap<>();
+        Map<CompanyTypeEnum, Double> companyRatio = new LinkedHashMap<>();
         int baseScore = 1;
         double totalScore = 0.0;
 
-        Map<CompanyType, Integer> scoreMap = new HashMap<>();
-        for (CompanyType type : companyTypes) {
+        Map<CompanyTypeEnum, Integer> scoreMap = new HashMap<>();
+        for (CompanyTypeEnum type : companyTypeEnums) {
             int score = baseScore + companyCount.getOrDefault(type, 0L).intValue();
             scoreMap.put(type, score);
             totalScore += score;
         }
 
-        for (CompanyType type : companyTypes) {
+        for (CompanyTypeEnum type : companyTypeEnums) {
             companyRatio.put(type, scoreMap.get(type) / totalScore);
         }
 
-        CompanyType companyTypeFinal = resolveFinal(companyCount, CompanyType.MIXED);
+        CompanyTypeEnum companyTypeEnumFinal = resolveFinal(companyCount, CompanyTypeEnum.MIXED);
 
         // 2. 복지 카운팅
         List<String> welfareAnswers = List.of(request.getQ4(), request.getQ5(), request.getQ6());
@@ -63,7 +63,7 @@ public class OnboardingService {
         String welfareFinal = resolveFinal(welfareCount, "all");
 
         // 3. DB에서 캐릭터 조회
-        OnboardingCharacter character = onboardingRepository.findByCompanyTypeAndWelfare(companyTypeFinal.getDisplayName(), welfareFinal)
+        OnboardingCharacter character = onboardingRepository.findByCompanyTypeAndWelfare(companyTypeEnumFinal.getDisplay(), welfareFinal)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.CHARACTER_NOT_FOUND));
 
 
@@ -72,13 +72,13 @@ public class OnboardingService {
                 .distinct()
                 .toList();
 
-        List<CompanyType> companyTypeList = companyAnswers.stream()
+        List<CompanyTypeEnum> companyTypeEnumList = companyAnswers.stream()
                 .distinct()
                 .toList();
 
         // 5. Response DTO 반환
         return OnboardingDto.OnboardingResponse.builder()
-                .companyTypeList(companyTypeList)
+                .companyTypeEnumList(companyTypeEnumList)
                 .companyRatio(companyRatio)
                 .welfareList(welfareList)
                 .characterId(character.getId())
@@ -102,9 +102,9 @@ public class OnboardingService {
         return top.size() == 1 ? top.get(0) : fallback;
     }
 
-    private CompanyType parseCompanyType(String input) {
-        return Arrays.stream(CompanyType.values())
-                .filter(ct -> ct.getDisplayName().equals(input)) // 한글 displayName 매칭
+    private CompanyTypeEnum parseCompanyType(String input) {
+        return Arrays.stream(CompanyTypeEnum.values())
+                .filter(ct -> ct.getDisplay().equals(input)) // 한글 displayName 매칭
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Invalid company type: " + input));
     }

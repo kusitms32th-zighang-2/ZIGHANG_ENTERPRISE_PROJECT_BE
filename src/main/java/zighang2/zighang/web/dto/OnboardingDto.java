@@ -28,8 +28,8 @@ public class OnboardingDto {
     @AllArgsConstructor
     @Builder
     public static class OnboardingResponse {
-        private List<CompanyType> companyTypeList;
-        private Map<CompanyType, Double> companyRatio;
+        private List<CompanyTypeEnum> companyTypeEnumList;
+        private Map<CompanyTypeEnum, Double> companyRatio;
         private List<String> welfareList;
         private Long characterId;
         private String characterName;
@@ -48,7 +48,7 @@ public class OnboardingDto {
 
         // ==== 온보딩 정보 ====
         private Long characterId;
-        private List<CompanyType> companyTypeList;
+        private List<CompanyTypeEnum> companyTypeEnumList;
         private List<String> welfareList; // redis
         private Map<String, Double> companyRatio; // redis
 

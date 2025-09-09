@@ -3,6 +3,7 @@ package zighang2.zighang.web.domain.user;
 import jakarta.persistence.*;
 import lombok.*;
 import zighang2.zighang.global.common.BaseEntity;
+import zighang2.zighang.web.domain.CompanyType;
 import zighang2.zighang.web.domain.JobGroup;
 import zighang2.zighang.web.domain.JobRecommend;
 import zighang2.zighang.web.domain.OnboardingCharacter;
@@ -45,8 +46,6 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
-    @Enumerated(EnumType.STRING)
-    private CompanyType companyType;
 
     @Enumerated(EnumType.STRING)
     private Education education;
@@ -67,19 +66,20 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserJobPosition> userJobPositions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<CompanyType> companyTypeList = new ArrayList<>();
+
     @ManyToOne
     @JoinColumn(name = "job_group_id")
     private JobGroup jobGroup;
 
     public void updateUsersInfo(
-                                CompanyType companyType,
                                 Education education,
                                 String workExperience,
                                 String address,
                                 Transport transport,
                                 Integer maxCommuteMinutes,
                                 String receivingEmail) {
-        if (companyType != null) this.companyType = companyType;
         if (education != null) this.education = education;
         if (workExperience != null) this.workExperience = workExperience.trim();
         if (address != null) this.address = address.trim();

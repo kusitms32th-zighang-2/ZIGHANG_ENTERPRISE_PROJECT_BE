@@ -11,4 +11,6 @@ import java.util.Optional;
 @Repository
 public interface JobPositionRepository extends JpaRepository<JobPosition, Long> {
     Optional<JobPosition> findByJobPositionNameAndJobGroup(JobPositionEnum jobPositionEnum, JobGroup jobGroup);
+
+    Optional<JobPosition> findByJobPositionName(JobPositionEnum jobPositionEnum);
 }

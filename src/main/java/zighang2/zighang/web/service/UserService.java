@@ -92,7 +92,7 @@ public class UserService {
 
             if (!alreadyExists) {
                 CompanyType companyType = companyTypeRepository.findByCompanyTypeName(companyTypeEnum)
-                        .orElseThrow(()->new NotFoundHandler(ErrorStatus.COMPANYTYPE_NOT_FOUND));
+                        .orElseThrow(()->new NotFoundHandler(ErrorStatus.COMPANY_TYPE_NOT_FOUND));
 
                 UserCompanyType uct = UserCompanyType.builder()
                         .user(user)

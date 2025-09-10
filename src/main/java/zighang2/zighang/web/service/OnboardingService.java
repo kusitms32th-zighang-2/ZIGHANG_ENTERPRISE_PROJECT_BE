@@ -1,16 +1,23 @@
 package zighang2.zighang.web.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.GeneralException;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
+import zighang2.zighang.global.service.RedisService;
+import zighang2.zighang.web.domain.CompanyType;
 import zighang2.zighang.web.domain.JobGroup;
+import zighang2.zighang.web.domain.JobPosition;
 import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
 import zighang2.zighang.web.domain.OnboardingCharacter;
 import zighang2.zighang.web.domain.enums.UserRole;
 import zighang2.zighang.web.domain.user.User;
+import zighang2.zighang.web.domain.user.UserCompanyType;
+import zighang2.zighang.web.domain.user.UserJobPosition;
 import zighang2.zighang.web.dto.OnboardingDto;
 import zighang2.zighang.web.repository.*;
 
@@ -21,12 +28,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OnboardingService {
 
-    private final OnboardingRepository onboardingRepository;
     private final JwtProvider jwtProvider;
+    private final RedisService redisService;
+    private final OnboardingRepository onboardingRepository;
     private final UserRepository userRepository;
     private final JobGroupRepository jobGroupRepository;
     private final JobPositionRepository jobPositionRepository;
     private final UserJobPositionRepository userJobPositionRepository;
+    private final CompanyTypeRepository companyTypeRepository;
+    private final UserCompanyTypeRepository userCompanyTypeRepository;
 
     public OnboardingDto.OnboardingResponse getOnboardingCharacter(OnboardingDto.OnboardingRequest request) {
 
@@ -44,7 +54,7 @@ public class OnboardingService {
                 .filter(ct -> ct != CompanyTypeEnum.MIXED)
                 .toList();
 
-        Map<String, Double> companyRatio = new LinkedHashMap<>();
+        Map<CompanyTypeEnum, Double> companyRatio = new LinkedHashMap<>();
         int baseScore = 1;
         double totalScore = 0.0;
 
@@ -56,7 +66,7 @@ public class OnboardingService {
         }
 
         for (CompanyTypeEnum type : companyTypeEnums) {
-            companyRatio.put(type.getDisplay(), scoreMap.get(type) / totalScore);
+            companyRatio.put(type, scoreMap.get(type) / totalScore);
         }
 
         CompanyTypeEnum companyTypeEnumFinal = resolveFinal(companyCount, CompanyTypeEnum.MIXED);
@@ -77,9 +87,8 @@ public class OnboardingService {
                 .distinct()
                 .toList();
 
-        List<String> companyTypeEnumList = companyAnswers.stream()
+        List<CompanyTypeEnum> companyTypeEnumList = companyAnswers.stream()
                 .distinct()
-                .map(CompanyTypeEnum::getDisplay) // enum → displayName 문자열 변환
                 .toList();
 
         // 5. Response DTO 반환
@@ -108,23 +117,14 @@ public class OnboardingService {
         return top.size() == 1 ? top.get(0) : fallback;
     }
 
-    private CompanyTypeEnum parseCompanyType(String input) {
-        return Arrays.stream(CompanyTypeEnum.values())
-                .filter(ct -> ct.getDisplay().equals(input)) // 한글 displayName 매칭
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Invalid company type: " + input));
-    }
-
+    @Transactional
     public OnboardingDto.OnboardingSignupResponse onboardingSignup(OnboardingDto.OnboardingSignupRequest request) {
-        // 1. Character 조회
         OnboardingCharacter character = onboardingRepository.findById(request.getCharacterId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 캐릭터"));
+                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.CHARACTER_NOT_FOUND));
 
-        // 2. JobGroup 조회
         JobGroup jobGroup = jobGroupRepository.findByjobGroupName(request.getJobGroupEnum())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 직군"));
+                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBGROUP_NOT_FOUND));
 
-        // 3. User 엔티티 생성
         User user = User.builder()
                 .education(request.getEducation())
                 .workExperience(Integer.valueOf(request.getWorkExperience()))
@@ -135,6 +135,37 @@ public class OnboardingService {
                 .jobGroup(jobGroup)
                 .userRole(UserRole.GENERAL)
                 .build();
+
+        userRepository.save(user);
+
+        JobPosition jobPosition = jobPositionRepository.findByJobPositionName(request.getJobPositionEnum())
+                .orElseThrow(() -> new NotFoundHandler(ErrorStatus .JOBPOSITION_NOT_FOUND));
+
+        UserJobPosition userJobPosition = UserJobPosition.builder()
+                .jobPosition(jobPosition)
+                .user(user)
+                .build();
+
+        userJobPositionRepository.save(userJobPosition);
+
+        if (request.getCompanyList() != null && !request.getCompanyList().isEmpty()) {
+            for (CompanyTypeEnum companyTypeEnum : request.getCompanyList()) {
+
+                CompanyType companyType = companyTypeRepository.findByCompanyTypeName(companyTypeEnum)
+                        .orElseThrow(() -> new NotFoundHandler(ErrorStatus.COMPANY_TYPE_NOT_FOUND));
+
+                UserCompanyType userCompanyType = UserCompanyType.builder()
+                        .user(user)
+                        .companyType(companyType)
+                        .build();
+
+                userCompanyTypeRepository.save(userCompanyType);
+            }
+        }
+
+
+
+
 
 
 

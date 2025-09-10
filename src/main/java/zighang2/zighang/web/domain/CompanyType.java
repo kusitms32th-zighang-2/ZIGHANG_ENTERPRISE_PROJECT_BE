@@ -12,6 +12,7 @@ import zighang2.zighang.web.domain.user.UserCompanyType;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Getter
 @Builder
 @Entity

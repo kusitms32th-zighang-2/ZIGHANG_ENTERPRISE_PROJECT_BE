@@ -52,4 +52,5 @@ public class RedisService {
     public void addToBlackList(String token, String reason) {
         redisTemplate.opsForValue().set(BLACKLIST_PREFIX + token, reason, accessExpirationTime, TimeUnit.MILLISECONDS);
     }
+
 }

@@ -92,7 +92,7 @@ public class UserService {
 
             if (!alreadyExists) {
                 CompanyType companyType = companyTypeRepository.findByCompanyTypeName(companyTypeEnum)
-                        .orElseThrow(()->new NotFoundHandler(ErrorStatus.COMPANYTYPE_NOT_FOUND));
+                        .orElseThrow(()->new NotFoundHandler(ErrorStatus.COMPANY_TYPE_NOT_FOUND));
 
                 UserCompanyType uct = UserCompanyType.builder()
                         .user(user)
@@ -128,6 +128,7 @@ public class UserService {
                 .map(uct-> uct.getCompanyType().getCompanyTypeName().getDisplay())
                 .toList();
 
+
         UserDto.MypageModifyResponse modifyResponse = UserDto.MypageModifyResponse.builder()
                 .jobGroups(user.getJobGroup().getJobGroupName().getDisplay())
                 .jobPositions(jobPositions)
@@ -144,6 +145,8 @@ public class UserService {
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
+                .characterId(user.getOnboardingCharacter().getId())
+                .characterName(user.getOnboardingCharacter().getCharacterName().getDisplayName())
                 .MypageModifyResponse(modifyResponse)
                 .build();
 

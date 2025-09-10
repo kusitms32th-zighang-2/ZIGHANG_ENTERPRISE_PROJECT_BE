@@ -15,7 +15,7 @@ import java.util.List;
 @Table(name = "job_positions")
 @Getter
 public class JobPosition extends BaseEntity {
-    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY )
     @Column(name = "job_position_id")
     private Long id;
 
@@ -29,6 +29,9 @@ public class JobPosition extends BaseEntity {
 
     @OneToMany(mappedBy = "jobPosition", orphanRemoval=true)
     private List<UserJobPosition> userJobPositions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "jobPosition")
+    private List<JobPostingJobPosition> jobPostingJobPositions = new ArrayList<>();
 
 
 }

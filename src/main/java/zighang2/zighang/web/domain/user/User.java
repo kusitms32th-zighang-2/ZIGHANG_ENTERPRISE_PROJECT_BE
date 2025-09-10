@@ -49,7 +49,7 @@ public class User extends BaseEntity {
     private Education education;
 
     @Column(length = 50)
-    private String workExperience;
+    private Integer workExperience;
 
     @Column(length = 50)
     private String receivingEmail;
@@ -73,13 +73,13 @@ public class User extends BaseEntity {
 
     public void updateUsersInfo(
                                 Education education,
-                                String workExperience,
+                                Integer workExperience,
                                 String address,
                                 Transport transport,
                                 Integer maxCommuteMinutes,
                                 String receivingEmail) {
         if (education != null) this.education = education;
-        if (workExperience != null) this.workExperience = workExperience.trim();
+        if (workExperience != null) this.workExperience = workExperience;
         if (address != null) this.address = address.trim();
         if (transport != null) this.transport = transport;
         if (maxCommuteMinutes != null) this.maxCommuteMinutes = maxCommuteMinutes;

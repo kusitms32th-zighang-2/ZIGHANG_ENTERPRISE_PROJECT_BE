@@ -128,7 +128,10 @@ public class UserService {
                 .map(uct-> uct.getCompanyType().getCompanyTypeName().getDisplay())
                 .toList();
 
+
         UserDto.MypageModifyResponse modifyResponse = UserDto.MypageModifyResponse.builder()
+                .characterId(user.getOnboardingCharacter().getId())
+                .characterName(user.getOnboardingCharacter().getCharacterName().getDisplayName())
                 .jobGroups(user.getJobGroup().getJobGroupName().getDisplay())
                 .jobPositions(jobPositions)
                 .companyTypes(companyTypes)

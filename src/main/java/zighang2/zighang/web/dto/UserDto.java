@@ -53,6 +53,8 @@ public class UserDto {
     @AllArgsConstructor
     @NoArgsConstructor(access = PROTECTED)
     public static class MypageModifyResponse {
+        private Long characterId;
+        private String characterName;
         private String jobGroups;
         private List<String> jobPositions;
         private List<String> companyTypes;

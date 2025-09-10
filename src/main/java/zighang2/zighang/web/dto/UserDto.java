@@ -28,6 +28,8 @@ public class UserDto {
         private Long id;
         private String email;
         private String name;
+        private Long characterId;
+        private String characterName;
         private MypageModifyResponse MypageModifyResponse;
     }
 
@@ -53,8 +55,6 @@ public class UserDto {
     @AllArgsConstructor
     @NoArgsConstructor(access = PROTECTED)
     public static class MypageModifyResponse {
-        private Long characterId;
-        private String characterName;
         private String jobGroups;
         private List<String> jobPositions;
         private List<String> companyTypes;

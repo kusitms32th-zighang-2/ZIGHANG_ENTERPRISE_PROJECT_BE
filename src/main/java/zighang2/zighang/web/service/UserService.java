@@ -130,8 +130,6 @@ public class UserService {
 
 
         UserDto.MypageModifyResponse modifyResponse = UserDto.MypageModifyResponse.builder()
-                .characterId(user.getOnboardingCharacter().getId())
-                .characterName(user.getOnboardingCharacter().getCharacterName().getDisplayName())
                 .jobGroups(user.getJobGroup().getJobGroupName().getDisplay())
                 .jobPositions(jobPositions)
                 .companyTypes(companyTypes)
@@ -147,6 +145,8 @@ public class UserService {
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
+                .characterId(user.getOnboardingCharacter().getId())
+                .characterName(user.getOnboardingCharacter().getCharacterName().getDisplayName())
                 .MypageModifyResponse(modifyResponse)
                 .build();
 

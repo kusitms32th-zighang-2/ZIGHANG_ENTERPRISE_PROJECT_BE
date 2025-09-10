@@ -14,9 +14,9 @@ public class OnboardingDto {
     @Getter
     @AllArgsConstructor
     public static class OnboardingRequest {
-        private String q1;
-        private String q2;
-        private String q3;
+        private CompanyTypeEnum q1;
+        private CompanyTypeEnum q2;
+        private CompanyTypeEnum q3;
         private String q4;
         private String q5;
         private String q6;
@@ -26,8 +26,8 @@ public class OnboardingDto {
     @AllArgsConstructor
     @Builder
     public static class OnboardingResponse {
-        private List<CompanyTypeEnum> companyTypeEnumList;
-        private Map<CompanyTypeEnum, Double> companyRatio;
+        private List<String> companyTypeEnumList;
+        private Map<String, Double> companyRatio;
         private List<String> welfareList;
         private Long characterId;
         private String characterName;
@@ -46,7 +46,8 @@ public class OnboardingDto {
 
         // ==== 온보딩 정보 ====
         private Long characterId;
-        private List<CompanyTypeEnum> companyTypeEnumList;
+        private List<String> companyList;
+
         private List<String> welfareList; // redis
         private Map<String, Double> companyRatio; // redis
 

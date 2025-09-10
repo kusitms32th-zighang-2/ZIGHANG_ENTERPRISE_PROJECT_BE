@@ -6,12 +6,13 @@ import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.GeneralException;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
+import zighang2.zighang.web.domain.JobGroup;
 import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
 import zighang2.zighang.web.domain.OnboardingCharacter;
+import zighang2.zighang.web.domain.enums.UserRole;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.dto.OnboardingDto;
-import zighang2.zighang.web.repository.OnboardingRepository;
-import zighang2.zighang.web.repository.UserRepository;
+import zighang2.zighang.web.repository.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,15 +22,19 @@ import java.util.stream.Collectors;
 public class OnboardingService {
 
     private final OnboardingRepository onboardingRepository;
-    private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
+    private final JobGroupRepository jobGroupRepository;
+    private final JobPositionRepository jobPositionRepository;
+    private final UserJobPositionRepository userJobPositionRepository;
+
     public OnboardingDto.OnboardingResponse getOnboardingCharacter(OnboardingDto.OnboardingRequest request) {
 
         // 1. 기업규모 카운팅 & 비율 계산 로직
         List<CompanyTypeEnum> companyAnswers = List.of(
-                parseCompanyType(request.getQ1()),
-                parseCompanyType(request.getQ2()),
-                parseCompanyType(request.getQ3())
+                (request.getQ1()),
+                (request.getQ2()),
+                (request.getQ3())
         );
 
         Map<CompanyTypeEnum, Long> companyCount = companyAnswers.stream()
@@ -39,7 +44,7 @@ public class OnboardingService {
                 .filter(ct -> ct != CompanyTypeEnum.MIXED)
                 .toList();
 
-        Map<CompanyTypeEnum, Double> companyRatio = new LinkedHashMap<>();
+        Map<String, Double> companyRatio = new LinkedHashMap<>();
         int baseScore = 1;
         double totalScore = 0.0;
 
@@ -51,7 +56,7 @@ public class OnboardingService {
         }
 
         for (CompanyTypeEnum type : companyTypeEnums) {
-            companyRatio.put(type, scoreMap.get(type) / totalScore);
+            companyRatio.put(type.getDisplay(), scoreMap.get(type) / totalScore);
         }
 
         CompanyTypeEnum companyTypeEnumFinal = resolveFinal(companyCount, CompanyTypeEnum.MIXED);
@@ -72,8 +77,9 @@ public class OnboardingService {
                 .distinct()
                 .toList();
 
-        List<CompanyTypeEnum> companyTypeEnumList = companyAnswers.stream()
+        List<String> companyTypeEnumList = companyAnswers.stream()
                 .distinct()
+                .map(CompanyTypeEnum::getDisplay) // enum → displayName 문자열 변환
                 .toList();
 
         // 5. Response DTO 반환
@@ -110,11 +116,26 @@ public class OnboardingService {
     }
 
     public OnboardingDto.OnboardingSignupResponse onboardingSignup(OnboardingDto.OnboardingSignupRequest request) {
-        // user 확인
-        User user = userRepository.findById(jwtProvider.getCurrentUserId())
-                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
-        // 데이터 저장
-        User.builder().build();
+        // 1. Character 조회
+        OnboardingCharacter character = onboardingRepository.findById(request.getCharacterId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 캐릭터"));
+
+        // 2. JobGroup 조회
+        JobGroup jobGroup = jobGroupRepository.findByjobGroupName(request.getJobGroupEnum())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 직군"));
+
+        // 3. User 엔티티 생성
+        User user = User.builder()
+                .education(request.getEducation())
+                .workExperience(Integer.valueOf(request.getWorkExperience()))
+                .address(request.getAddress())
+                .transport(request.getTransport())
+                .maxCommuteMinutes(request.getMaxCommuteMinutes())
+                .onboardingCharacter(character)
+                .jobGroup(jobGroup)
+                .userRole(UserRole.GENERAL)
+                .build();
+
 
 
 

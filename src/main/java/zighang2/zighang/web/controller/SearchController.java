@@ -2,9 +2,14 @@ package zighang2.zighang.web.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import zighang2.zighang.global.payload.ApiResponse;
+import zighang2.zighang.web.dto.SearchDto;
 import zighang2.zighang.web.service.SearchService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/search")
@@ -14,7 +19,7 @@ public class SearchController {
     private final SearchService searchService;
 
 //    @PostMapping
-//    public List<SearchResponse> search(@RequestBody SearchRequest request) {
-//        return searchService.search(request.getQuery());
+//    public ApiResponse<List<SearchDto.SearchResponse>> search(@RequestBody SearchDto.SearchRequest request) {
+//        return ApiResponse.onSuccess(searchService.recommendJobPostings(request));
 //    }
 }

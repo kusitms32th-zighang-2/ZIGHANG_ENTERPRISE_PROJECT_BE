@@ -40,7 +40,7 @@ public class UserDto {
         private List<JobPositionEnum> jobPositions;
         private List<CompanyTypeEnum> companyTypes;
         private Education education;
-        private String workExperience;
+        private Integer workExperience;
         private String address;
         private Transport transport;
         private Integer maxCommuteMinutes;
@@ -57,7 +57,7 @@ public class UserDto {
         private List<String> jobPositions;
         private List<String> companyTypes;
         private String education;
-        private String workExperience;
+        private Integer workExperience;
         private String address;
         private String transport;
         private Integer maxCommuteMinutes;

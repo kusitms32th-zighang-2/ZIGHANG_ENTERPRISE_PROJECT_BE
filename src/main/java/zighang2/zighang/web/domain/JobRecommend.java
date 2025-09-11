@@ -43,14 +43,15 @@ public class JobRecommend extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Education education;
 
-    @Enumerated(EnumType.STRING)
-    private RecruitmentType recruitmentType;
-
     @OneToMany(mappedBy = "jobRecommend")
     private List<JobPostingJobPosition> jobPostingJobPositions = new ArrayList<>();
 
     @OneToMany(mappedBy = "jobRecommend")
     private List<JobPostingJobGroup> jobPostingJobGroups = new ArrayList<>();
+
+    @OneToMany(mappedBy = "jobRecommend")
+    @Builder.Default
+    private List<JobPostingRecruitmentType> jobPostingRecruitmentTypes = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

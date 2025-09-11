@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 public class OnboardingService {
 
     private final JwtProvider jwtProvider;
-    private final RedisService redisService;
     private final OnboardingRepository onboardingRepository;
     private final UserRepository userRepository;
     private final JobGroupRepository jobGroupRepository;
@@ -176,20 +175,16 @@ public class OnboardingService {
                 user, request.getWelfareList(), request.getCompanyRatio()
         );
 
-        // 아래부터 거리로 필터링 로직
         System.out.println(quickRecommendations);
 
-
-
-//        // // 4. 전체 추천 (비동기)
-//        recommendService.getFullRecommendationsAsync();
+        // 4. 전체 추천 (비동기)
+        recommendService.getFullRecommendationsAsync();
 
 
 
 
 
 
-        // 응답 주기
         return null;
     }
 }

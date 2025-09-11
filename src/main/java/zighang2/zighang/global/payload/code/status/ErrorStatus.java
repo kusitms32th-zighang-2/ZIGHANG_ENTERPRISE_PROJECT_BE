@@ -54,9 +54,11 @@ public enum ErrorStatus implements BaseErrorCode {
     JOBGROUP_NOT_FOUND(HttpStatus.NOT_FOUND, "JOBGROUP_6001", "해당하는 직군이 존재하지 않습니다."),
     JOBPOSITION_NOT_FOUND(HttpStatus.NOT_FOUND, "JOBPOSITION_6002", "해당하는 직무가 존재하지 않습니다."),
 
-    //COMPANYTYPE 관련 에러 7000
-    COMPANY_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "COMPANYTYPE_7001","해당하는 기업 유형이 존재하지 않습니다.")
-;
+    // COMPANY TYPE 관련 에러 7000
+    COMPANY_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "COMPANYTYPE_7001","해당하는 기업 유형이 존재하지 않습니다."),
+
+    // RecruitmentType 관련 에러 8000
+    RECRUITMENT_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "RECRUITMENT_TYPE_8001","해당하는 모집 유형이 존재하지 않습니다.");
 
 
     private final HttpStatus httpStatus;

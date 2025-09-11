@@ -1,23 +1,16 @@
 package zighang2.zighang.web.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.util.EntityUtils;
-import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Request;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.Strings;
-import org.elasticsearch.common.bytes.BytesArray;
 import org.elasticsearch.common.xcontent.*;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.script.Script;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
@@ -25,15 +18,18 @@ import zighang2.zighang.global.config.TmapClient;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.handler.BadRequestHandler;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
+import zighang2.zighang.web.domain.JobPostingRecruitmentType;
 import zighang2.zighang.web.domain.JobRecommend;
+import zighang2.zighang.web.domain.RecruitmentType;
 import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
 import zighang2.zighang.web.domain.enums.Education;
-import zighang2.zighang.web.domain.enums.RecruitmentType;
+import zighang2.zighang.web.domain.enums.RecruitmentTypeEnum;
 import zighang2.zighang.web.domain.enums.Transport;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.dto.JobRecommendDto;
 import zighang2.zighang.web.dto.tmap.GeocodePoint;
 import zighang2.zighang.web.repository.JobRecommendRepository;
+import zighang2.zighang.web.repository.RecruitmentTypeRepository;
 import zighang2.zighang.web.repository.UserRepository;
 
 import java.util.*;
@@ -48,8 +44,7 @@ public class RecommendService {
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
     private final JobRecommendRepository jobRecommendRepository;
-
-
+    private final RecruitmentTypeRepository recruitmentTypeRepository;
     private final RestHighLevelClient client;
     private final EmbeddingService embeddingService;
 
@@ -120,7 +115,7 @@ public class RecommendService {
 
             // 2. JSON DSL 직접 구성
             XContentBuilder builder = XContentFactory.jsonBuilder();
-            builder.startObject();   // ✅ 루트 열기
+            builder.startObject();
             {
                 builder.field("size", 200);
 
@@ -129,75 +124,57 @@ public class RecommendService {
                 {
                     builder.startObject("bool");
                     {
-//                        // filter 조건
-//                        builder.startArray("filter");
-//                        {
-//                            // depthOne → terms_set
-//                            builder.startObject();
-//                            {
-//                                builder.startObject("terms_set");
-//                                {
-//                                    builder.startObject("depthOne");
-//                                    {
-//                                        builder.field("terms", List.of(user.getJobGroup().getJobGroupName()));
-//                                        builder.startObject("minimum_should_match_script")
-//                                                .field("source", "1")
-//                                                .endObject();
-//                                    }
-//                                    builder.endObject();
-//                                }
-//                                builder.endObject();
-//                            }
-//                            builder.endObject();
-//
-//                            // depthTwo → terms_set
-//                            builder.startObject();
-//                            {
-//                                builder.startObject("terms_set");
-//                                {
-//                                    builder.startObject("depthTwo");
-//                                    {
-//                                        builder.field("terms", user.getUserJobPositions().stream()
-//                                                .map(pos -> pos.getJobPosition().getJobPositionName())
-//                                                .toList());
-//                                        builder.startObject("minimum_should_match_script")
-//                                                .field("source", "1")
-//                                                .endObject();
-//                                    }
-//                                    builder.endObject();
-//                                }
-//                                builder.endObject();
-//                            }
-//                            builder.endObject();
-//
-////                            // education
-////                            builder.startObject();
-////                            {
-////                                builder.startObject("range");
-////                                {
-////                                    builder.startObject("educationLevel")
-////                                            .field("lte", user.getEducation().getLevel())
-////                                            .endObject();
-////                                }
-////                                builder.endObject();
-////                            }
-////                            builder.endObject();
-//
-////                            // career
-////                            builder.startObject();
-////                            {
-////                                builder.startObject("range");
-////                                {
-////                                    builder.startObject("career")
-////                                            .field("lte", user.getWorkExperience())
-////                                            .endObject();
-////                                }
-////                                builder.endObject();
-////                            }
-////                            builder.endObject();
-//                        }
-////                        builder.endArray();
+                        // filter 조건
+                        builder.startArray("filter");
+                        {
+                            // depthOne → term (직군 하나)
+                            builder.startObject();
+                            {
+                                builder.startObject("terms")
+                                        .field("depthOne", List.of(user.getJobGroup().getJobGroupName()))
+                                        .endObject();
+                            }
+                            builder.endObject();
 
+//                             depthTwo → terms (직무 여러개)
+                            builder.startObject();
+                            {
+                                builder.startObject("terms")
+                                        .field("depthTwo",
+                                                user.getUserJobPositions().stream()
+                                                        .map(pos -> pos.getJobPosition().getJobPositionName().getDisplay())
+                                                        .toList())
+                                        .endObject();
+                            }
+                            builder.endObject();
+
+                            // educationLevel → range
+                            builder.startObject();
+                            {
+                                builder.startObject("range");
+                                {
+                                    builder.startObject("educationLevel")
+                                            .field("lte", user.getEducation().getLevel())
+                                            .endObject();
+                                }
+                                builder.endObject();
+                            }
+                            builder.endObject();
+
+//                             career → range
+                            builder.startObject();
+                            {
+                                builder.startObject("range");
+                                {
+                                    builder.startObject("career")
+                                            .field("lte", user.getWorkExperience())
+                                            .endObject();
+                                }
+                                builder.endObject();
+                            }
+                            builder.endObject();
+                        }
+                        builder.endArray(); // filter 닫기
                         // must → knn
                         builder.startArray("must");
                         {
@@ -208,7 +185,7 @@ public class RecommendService {
                                     builder.startObject("embedding");
                                     {
                                         builder.field("vector", welfareEmbedding);
-                                        builder.field("k", 10 );
+                                        builder.field("k", 200 );
                                     }
                                     builder.endObject();
                                 }
@@ -222,10 +199,11 @@ public class RecommendService {
                 }
                 builder.endObject(); // query
             }
-            builder.endObject(); // ✅ 루트 닫기
+            builder.endObject(); // 루트 닫기
 
             // 3. JSON 직렬화
             String queryJson = Strings.toString(builder);
+            System.out.println("queryJson = " + queryJson);
 
             // 4. LowLevelClient 요청
             Request request = new Request("POST", "/job-postings/_search");
@@ -233,7 +211,6 @@ public class RecommendService {
 
             Response response = client.getLowLevelClient().performRequest(request);
 
-            
 
             // 5. 응답 변환
             String responseBody = EntityUtils.toString(response.getEntity());
@@ -253,8 +230,8 @@ public class RecommendService {
                     .map(hit -> parseJobPosting(hit.getSourceAsMap()))
                     .toList();
 
-            // 7. 회사 비율 적용 → 최종 추천 6개
-            return distributeByCompanyRatio(candidates, companyRatio, 6);
+            System.out.println("candidates.size() = " + candidates.size());
+            return candidates;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -270,9 +247,21 @@ public class RecommendService {
 
     @SuppressWarnings("unchecked")
     private JobRecommend parseJobPosting(Map<String, Object> source) {
-        Map<String, Object> company = (Map<String, Object>) source.get("company");
+        Object companyObj = source.get("company");
+        Map<String, Object> company = null;
 
-        return JobRecommend.builder()
+
+        try {
+            if (companyObj instanceof Map) {
+                company = (Map<String, Object>) companyObj;
+            } else if (companyObj instanceof String) {
+                company = new ObjectMapper().readValue((String) companyObj, Map.class);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to parse company field: {}", companyObj, e);
+        }
+
+        JobRecommend jobRecommend = JobRecommend.builder()
                 .title((String) source.getOrDefault("title", ""))
                 .companyName(company != null ? (String) company.getOrDefault("companyName", "") : "")
                 .recruitmentAddress((String) source.getOrDefault("recruitmentAddress", ""))
@@ -282,12 +271,46 @@ public class RecommendService {
                         ? CompanyTypeEnum.valueOf(company.get("companyType").toString())
                         : null)
                 .education(source.get("education") != null
-                        ? Education.valueOf(source.get("education").toString())
-                        : null)
-                .recruitmentType(source.get("recruitmentType") != null
-                        ? RecruitmentType.valueOf(source.get("recruitmentType").toString())
+                        ? Education.valueOf(getFirstValue(source.get("education")))
                         : null)
                 .build();
+
+
+        Object recruitmentTypeObj = source.get("recruitmentType");
+        if (recruitmentTypeObj instanceof List) {
+            List<?> recruitmentList = (List<?>) recruitmentTypeObj;
+            // 중복 제거
+            Set<String> recruitmentSet = recruitmentList.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toSet());
+
+            for (String r : recruitmentSet) {
+                try {
+                    RecruitmentTypeEnum typeEnum = RecruitmentTypeEnum.valueOf(r);
+                    RecruitmentType recruitmentType = recruitmentTypeRepository.findByRecruitmentType(typeEnum)
+                            .orElseThrow(() -> new NotFoundHandler(ErrorStatus.RECRUITMENT_TYPE_NOT_FOUND));
+
+                    JobPostingRecruitmentType jobPostingRecruitmentType = JobPostingRecruitmentType.builder()
+                            .jobRecommend(jobRecommend)
+                            .recruitmentType(recruitmentType)
+                            .build();
+
+                    jobRecommend.getJobPostingRecruitmentTypes().add(jobPostingRecruitmentType);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Unknown recruitmentType value: {}", r);
+                }
+            }
+        }
+        return jobRecommend;
+    }
+
+    private String getFirstValue(Object value) {
+        if (value == null) return null;
+        if (value instanceof java.util.List) {
+            List<?> list = (List<?>) value;
+            return list.isEmpty() ? null : list.get(0).toString();
+        }
+        return value.toString();
     }
 
 

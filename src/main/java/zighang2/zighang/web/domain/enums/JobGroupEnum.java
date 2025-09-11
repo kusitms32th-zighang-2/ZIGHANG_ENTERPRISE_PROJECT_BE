@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 
 public enum JobGroupEnum {
-    전체("전체"),
     IT_개발("IT/개발"),
     AI_데이터("AI/데이터"),
     게임("게임"),

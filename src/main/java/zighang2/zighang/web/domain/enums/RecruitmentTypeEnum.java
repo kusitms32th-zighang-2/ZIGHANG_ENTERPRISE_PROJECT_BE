@@ -1,17 +1,17 @@
 package zighang2.zighang.web.domain.enums;
 
-public enum RecruitmentType {
+public enum RecruitmentTypeEnum {
     FULL_TIME("정규직"),
     CONTRACT("계약직"),
     DAY_WORKER("일용직"),
     CONVERTIBLE_INTERN("전환형 인턴"),
-    EXPERIENTIAL_INTERN("채용형 인턴"),
+    EXPERIENTIAL_INTERN("체험형 인턴"),
     FREELANCER("프리랜서"),
     ALTERNATIVE_MILITARY_SERVICE("산업기능요원");
 
     private final String displayName;
 
-    RecruitmentType(String displayName) {
+    RecruitmentTypeEnum(String displayName) {
         this.displayName = displayName;
     }
 

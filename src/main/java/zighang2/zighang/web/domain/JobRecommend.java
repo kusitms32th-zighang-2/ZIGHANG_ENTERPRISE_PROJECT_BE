@@ -43,7 +43,6 @@ public class JobRecommend extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Education education;
 
-    @Column(length = 50)
     private Integer workExperience;
 
     @Enumerated(EnumType.STRING)

@@ -48,7 +48,6 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Education education;
 
-    @Column(length = 50)
     private Integer workExperience;
 
     @Column(length = 50)

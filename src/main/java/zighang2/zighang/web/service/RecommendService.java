@@ -85,7 +85,7 @@ public class RecommendService {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public JobPostingResponseDto.JobPostingDetailDto getJobPostingDetail(Long jobPostingId){
         JobRecommend jobRecommend = jobRecommendRepository.findById(jobPostingId)
                 .orElseThrow(()-> new NotFoundHandler(ErrorStatus.JOBRECOMMEND_NOT_FOUND));

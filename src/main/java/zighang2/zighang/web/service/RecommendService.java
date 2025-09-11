@@ -2,6 +2,7 @@ package zighang2.zighang.web.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.config.TmapClient;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
@@ -10,6 +11,7 @@ import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
 import zighang2.zighang.web.domain.JobRecommend;
 import zighang2.zighang.web.domain.enums.Transport;
 import zighang2.zighang.web.domain.user.User;
+import zighang2.zighang.web.dto.JobPostingResponseDto;
 import zighang2.zighang.web.dto.JobRecommendDto;
 import zighang2.zighang.web.dto.tmap.GeocodePoint;
 import zighang2.zighang.web.repository.JobRecommendRepository;
@@ -81,5 +83,13 @@ public class RecommendService {
         } catch (Exception e) {
             return Optional.empty();
         }
+    }
+
+    @Transactional(readOnly = true)
+    public JobPostingResponseDto.JobPostingDetailDto getJobPostingDetail(Long jobPostingId){
+        JobRecommend jobRecommend = jobRecommendRepository.findById(jobPostingId)
+                .orElseThrow(()-> new NotFoundHandler(ErrorStatus.JOBRECOMMEND_NOT_FOUND));
+
+        return JobPostingResponseDto.JobPostingDetailDto.of(jobRecommend);
     }
 }

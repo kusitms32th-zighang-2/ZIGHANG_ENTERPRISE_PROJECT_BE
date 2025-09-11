@@ -46,7 +46,7 @@ public class User extends BaseEntity {
     private UserRole userRole;
 
     @Enumerated(EnumType.STRING)
-    private Education education;
+    private Education education; // 학력
 
     private Integer workExperience;
 
@@ -61,14 +61,14 @@ public class User extends BaseEntity {
     private List<JobRecommend> jobRecommendList= new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<UserJobPosition> userJobPositions = new ArrayList<>();
+    private List<UserJobPosition> userJobPositions = new ArrayList<>(); // 직무
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<UserCompanyType> userCompanyTypes = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "job_group_id")
-    private JobGroup jobGroup;
+    private JobGroup jobGroup; // 직군
 
     public void updateUsersInfo(
                                 Education education,
@@ -88,5 +88,22 @@ public class User extends BaseEntity {
     public void updateUsersJobGroup(JobGroup jobGroup) {
         if (jobGroup != null) this.jobGroup = jobGroup;
 
+    }
+
+    public void updateOnboardingInfo(Education education,
+                                     int workExperience,
+                                     String address,
+                                     Transport transport,
+                                     int maxCommuteMinutes,
+                                     OnboardingCharacter character,
+                                     JobGroup jobGroup) {
+        this.education = education;
+        this.workExperience = workExperience;
+        this.address = address;
+        this.transport = transport;
+        this.maxCommuteMinutes = maxCommuteMinutes;
+        this.onboardingCharacter = character;
+        this.jobGroup = jobGroup;
+        this.userRole = UserRole.GENERAL; // 신규 가입 시 기본 롤
     }
 }

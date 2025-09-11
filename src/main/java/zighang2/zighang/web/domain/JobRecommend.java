@@ -1,10 +1,7 @@
 package zighang2.zighang.web.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import zighang2.zighang.global.common.BaseEntity;
 import zighang2.zighang.web.domain.enums.*;
 import zighang2.zighang.web.domain.user.User;
@@ -13,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@Setter
 @Builder
 @Entity
 @AllArgsConstructor
@@ -34,7 +32,7 @@ public class JobRecommend extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String ocrData;
 
-    @Column(length = 50)
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @Enumerated(EnumType.STRING)
@@ -45,14 +43,15 @@ public class JobRecommend extends BaseEntity {
 
     private Integer workExperience;
 
-    @Enumerated(EnumType.STRING)
-    private RecruitmentType recruitmentType;
-
     @OneToMany(mappedBy = "jobRecommend")
     private List<JobPostingJobPosition> jobPostingJobPositions = new ArrayList<>();
 
     @OneToMany(mappedBy = "jobRecommend")
     private List<JobPostingJobGroup> jobPostingJobGroups = new ArrayList<>();
+
+    @OneToMany(mappedBy = "jobRecommend")
+    @Builder.Default
+    private List<JobPostingRecruitmentType> jobPostingRecruitmentTypes = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

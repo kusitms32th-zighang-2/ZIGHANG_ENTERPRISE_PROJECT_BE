@@ -46,7 +46,7 @@ public class JobPostingResponseDto {
                             .map(jp->jp.getJobPosition().getJobPositionName().getDisplay())
                             .toList()
                     )
-                    .recruitmentType(jobRecommend.getRecruitmentType().getDisplayName())
+//                    .recruitmentType(jobRecommend.getRecruitmentType().getDisplayName())
                     .recruitmentAddress(jobRecommend.getRecruitmentAddress())
                     .content(jobRecommend.getContent())
                     .build();

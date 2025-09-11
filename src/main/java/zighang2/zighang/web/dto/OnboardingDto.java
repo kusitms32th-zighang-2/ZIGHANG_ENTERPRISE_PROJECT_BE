@@ -36,10 +36,10 @@ public class OnboardingDto {
     @Getter
     @AllArgsConstructor
     public static class OnboardingSignupRequest {
-        private String workExperience;
+        private Integer workExperience;
         private Education education;
         private JobGroupEnum jobGroupEnum;
-        private JobPositionEnum jobPositionEnum;
+        private List<JobPositionEnum> jobPositionEnum;
         private Integer maxCommuteMinutes;
         private Transport transport;
         private String address;

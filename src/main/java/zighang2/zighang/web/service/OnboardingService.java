@@ -9,11 +9,9 @@ import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.GeneralException;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
 import zighang2.zighang.global.service.RedisService;
-import zighang2.zighang.web.domain.CompanyType;
-import zighang2.zighang.web.domain.JobGroup;
-import zighang2.zighang.web.domain.JobPosition;
+import zighang2.zighang.web.domain.*;
 import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
-import zighang2.zighang.web.domain.OnboardingCharacter;
+import zighang2.zighang.web.domain.enums.JobPositionEnum;
 import zighang2.zighang.web.domain.enums.UserRole;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.domain.user.UserCompanyType;
@@ -37,6 +35,7 @@ public class OnboardingService {
     private final UserJobPositionRepository userJobPositionRepository;
     private final CompanyTypeRepository companyTypeRepository;
     private final UserCompanyTypeRepository userCompanyTypeRepository;
+    private final RecommendService recommendService;
 
     public OnboardingDto.OnboardingResponse getOnboardingCharacter(OnboardingDto.OnboardingRequest request) {
 
@@ -119,34 +118,43 @@ public class OnboardingService {
 
     @Transactional
     public OnboardingDto.OnboardingSignupResponse onboardingSignup(OnboardingDto.OnboardingSignupRequest request) {
+        Long userId = jwtProvider.getCurrentUserId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
+
         OnboardingCharacter character = onboardingRepository.findById(request.getCharacterId())
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.CHARACTER_NOT_FOUND));
 
         JobGroup jobGroup = jobGroupRepository.findByjobGroupName(request.getJobGroupEnum())
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBGROUP_NOT_FOUND));
 
-        User user = User.builder()
-                .education(request.getEducation())
-                .workExperience(Integer.valueOf(request.getWorkExperience()))
-                .address(request.getAddress())
-                .transport(request.getTransport())
-                .maxCommuteMinutes(request.getMaxCommuteMinutes())
-                .onboardingCharacter(character)
-                .jobGroup(jobGroup)
-                .userRole(UserRole.GENERAL)
-                .build();
+        user.updateOnboardingInfo(
+                request.getEducation(),
+                request.getWorkExperience(),
+                request.getAddress(),
+                request.getTransport(),
+                request.getMaxCommuteMinutes(),
+                character,
+                jobGroup
+        );
 
         userRepository.save(user);
 
-        JobPosition jobPosition = jobPositionRepository.findByJobPositionName(request.getJobPositionEnum())
-                .orElseThrow(() -> new NotFoundHandler(ErrorStatus .JOBPOSITION_NOT_FOUND));
+        if(request.getJobPositionEnum() != null && !request.getJobPositionEnum().isEmpty()) {
+            for(JobPositionEnum jobPositionEnum : request.getJobPositionEnum()) {
+                JobPosition jobPosition = jobPositionRepository.findByJobPositionName(jobPositionEnum)
+                        .orElseThrow(() -> new NotFoundHandler(ErrorStatus .JOBPOSITION_NOT_FOUND));
 
-        UserJobPosition userJobPosition = UserJobPosition.builder()
-                .jobPosition(jobPosition)
-                .user(user)
-                .build();
+                UserJobPosition userJobPosition = UserJobPosition.builder()
+                        .jobPosition(jobPosition)
+                        .user(user)
+                        .build();
 
-        userJobPositionRepository.save(userJobPosition);
+                userJobPositionRepository.save(userJobPosition);
+            }
+        }
+
 
         if (request.getCompanyList() != null && !request.getCompanyList().isEmpty()) {
             for (CompanyTypeEnum companyTypeEnum : request.getCompanyList()) {
@@ -163,15 +171,25 @@ public class OnboardingService {
             }
         }
 
+        // 빠른 추천 (동기) -> 응답에 포함
+        List<JobRecommend> quickRecommendations = recommendService.getQuickRecommendations(
+                user, request.getWelfareList(), request.getCompanyRatio()
+        );
+
+        // 아래부터 거리로 필터링 로직
+        System.out.println(quickRecommendations);
+
+
+
+//        // // 4. 전체 추천 (비동기)
+//        recommendService.getFullRecommendationsAsync();
 
 
 
 
 
 
-
-
-        // redis에 데이터 저장
+        // 응답 주기
         return null;
     }
 }

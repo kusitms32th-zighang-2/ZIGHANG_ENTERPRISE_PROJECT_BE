@@ -26,7 +26,7 @@ public class JobPostingResponseDto {
         private Integer workExperience;
         @Schema(description = "학력", example = "학력 무관")
         private String education;
-        @Schema(description = "직무", example = "프론트엔드")
+        @Schema(description = "직무", example = "[프론트엔드, 서버_백엔드]")
         private List<String> jobPositions;
         @Schema(description = "근무 형태", example = "전환형 인턴")
         private String recruitmentType;

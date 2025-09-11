@@ -7,7 +7,6 @@ public enum CompanyTypeEnum {
         UNICORN("유니콘"),
         STARTUP("스타트업"),
         SMALL_MEDIUM("중소기업"),
-        PUBLIC("공공기관"),
         MIXED("all");
 
     private final String display;

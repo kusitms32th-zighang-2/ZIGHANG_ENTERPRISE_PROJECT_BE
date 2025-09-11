@@ -28,10 +28,12 @@ import zighang2.zighang.web.domain.enums.Transport;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.dto.JobRecommendDto;
 import zighang2.zighang.web.dto.tmap.GeocodePoint;
+import zighang2.zighang.web.repository.JobPostingRecruitmentTypeRepository;
 import zighang2.zighang.web.repository.JobRecommendRepository;
 import zighang2.zighang.web.repository.RecruitmentTypeRepository;
 import zighang2.zighang.web.repository.UserRepository;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,6 +49,7 @@ public class RecommendService {
     private final RecruitmentTypeRepository recruitmentTypeRepository;
     private final RestHighLevelClient client;
     private final EmbeddingService embeddingService;
+    private final JobPostingRecruitmentTypeRepository jobPostingRecruitmentTypeRepository;
 
     public List<JobRecommendDto.JobRecommendResponseDto> get6Recommends() {
         User user = userRepository.findById(jwtProvider.getCurrentUserId())
@@ -105,114 +108,21 @@ public class RecommendService {
     }
 
 
-    public List<JobRecommend> getQuickRecommendations(User user,
-                                                      List<String> welfareList,
-                                                      Map<String, Double> companyRatio) {
+    @Async
+    public void getFullRecommendationsAsync(User user,
+                                            List<String> welfareList,
+                                            Map<String, Double> companyRatio) {
         try {
-            // 1. welfareList → embedding vector
             float[] welfareEmbedding = embeddingService.getEmbedding(welfareList);
-            System.out.println("welfareEmbedding = " + welfareEmbedding);
+            String queryJson = buildQuery(user, welfareEmbedding);
 
-            // 2. JSON DSL 직접 구성
-            XContentBuilder builder = XContentFactory.jsonBuilder();
-            builder.startObject();
-            {
-                builder.field("size", 200);
-
-                // query
-                builder.startObject("query");
-                {
-                    builder.startObject("bool");
-                    {
-                        // filter 조건
-                        builder.startArray("filter");
-                        {
-                            // depthOne → term (직군 하나)
-                            builder.startObject();
-                            {
-                                builder.startObject("terms")
-                                        .field("depthOne", List.of(user.getJobGroup().getJobGroupName()))
-                                        .endObject();
-                            }
-                            builder.endObject();
-
-//                             depthTwo → terms (직무 여러개)
-                            builder.startObject();
-                            {
-                                builder.startObject("terms")
-                                        .field("depthTwo",
-                                                user.getUserJobPositions().stream()
-                                                        .map(pos -> pos.getJobPosition().getJobPositionName().getDisplay())
-                                                        .toList())
-                                        .endObject();
-                            }
-                            builder.endObject();
-
-                            // educationLevel → range
-                            builder.startObject();
-                            {
-                                builder.startObject("range");
-                                {
-                                    builder.startObject("educationLevel")
-                                            .field("lte", user.getEducation().getLevel())
-                                            .endObject();
-                                }
-                                builder.endObject();
-                            }
-                            builder.endObject();
-
-//                             career → range
-                            builder.startObject();
-                            {
-                                builder.startObject("range");
-                                {
-                                    builder.startObject("career")
-                                            .field("lte", user.getWorkExperience())
-                                            .endObject();
-                                }
-                                builder.endObject();
-                            }
-                            builder.endObject();
-                        }
-                        builder.endArray(); // filter 닫기
-                        // must → knn
-                        builder.startArray("must");
-                        {
-                            builder.startObject();
-                            {
-                                builder.startObject("knn");
-                                {
-                                    builder.startObject("embedding");
-                                    {
-                                        builder.field("vector", welfareEmbedding);
-                                        builder.field("k", 200 );
-                                    }
-                                    builder.endObject();
-                                }
-                                builder.endObject();
-                            }
-                            builder.endObject();
-                        }
-                        builder.endArray();
-                    }
-                    builder.endObject();
-                }
-                builder.endObject(); // query
-            }
-            builder.endObject(); // 루트 닫기
-
-            // 3. JSON 직렬화
-            String queryJson = Strings.toString(builder);
-            System.out.println("queryJson = " + queryJson);
-
-            // 4. LowLevelClient 요청
+            // openSearch 요청
             Request request = new Request("POST", "/job-postings/_search");
             request.setJsonEntity(queryJson);
 
             Response response = client.getLowLevelClient().performRequest(request);
 
-
-            // 5. 응답 변환
+            // 응답 변환
             String responseBody = EntityUtils.toString(response.getEntity());
 
             SearchResponse searchResponse = SearchResponse.fromXContent(
@@ -223,14 +133,74 @@ public class RecommendService {
                     )
             );
 
-            System.out.println("searchResponse = " + searchResponse);
-
-            // 6. 후보군 파싱
+            // 후보군 파싱
             List<JobRecommend> candidates = Arrays.stream(searchResponse.getHits().getHits())
                     .map(hit -> parseJobPosting(hit.getSourceAsMap()))
                     .toList();
 
-            System.out.println("candidates.size() = " + candidates.size());
+            // ================= 거리 필터링 =========================
+
+
+
+
+            // =====================================================
+
+            List<JobRecommend> distributed = distributeByCompanyRatio(candidates, companyRatio, 100);
+
+            // User 연관관계 설정
+            distributed.forEach(job -> job.setUser(user));
+
+            // JobRecommend 저장
+            jobRecommendRepository.saveAll(distributed);
+
+            // JobPostingRecruitmentType 저장
+            distributed.forEach(job -> {
+                if (!job.getJobPostingRecruitmentTypes().isEmpty()) {
+                    jobPostingRecruitmentTypeRepository.saveAll(job.getJobPostingRecruitmentTypes());
+                }
+            });
+
+            log.info("Full Recommendations 저장 완료: {}개", distributed.size());
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("getFullRecommendationsAsync 실패: {}", e.getMessage());
+        }
+
+    }
+
+    public List<JobRecommend> getQuickRecommendations(User user,
+                                                      List<String> welfareList) {
+        try {
+            float[] welfareEmbedding = embeddingService.getEmbedding(welfareList);
+            String queryJson = buildQuery(user, welfareEmbedding);
+            System.out.println("queryJson = " + queryJson);
+
+            // openSearch 요청
+            Request request = new Request("POST", "/job-postings/_search");
+            request.setJsonEntity(queryJson);
+
+            Response response = client.getLowLevelClient().performRequest(request);
+
+            // 응답 변환
+            String responseBody = EntityUtils.toString(response.getEntity());
+
+            SearchResponse searchResponse = SearchResponse.fromXContent(
+                    JsonXContent.jsonXContent.createParser(
+                            NamedXContentRegistry.EMPTY,
+                            DeprecationHandler.THROW_UNSUPPORTED_OPERATION,
+                            responseBody
+                    )
+            );
+
+            // 후보군 파싱
+            List<JobRecommend> candidates = Arrays.stream(searchResponse.getHits().getHits())
+                    .map(hit -> parseJobPosting(hit.getSourceAsMap()))
+                    .toList();
+
+            System.out.println("candidates = " + candidates);
+            // 출력
             return candidates;
 
         } catch (Exception e) {
@@ -239,17 +209,105 @@ public class RecommendService {
         }
     }
 
+    // openSearch 쿼리 생성 메서드
+    private static String buildQuery(User user, float[] welfareEmbedding) throws IOException {
+        XContentBuilder builder = XContentFactory.jsonBuilder();
+        builder.startObject();
+        {
+            builder.field("size", 200);
 
+            // query
+            builder.startObject("query");
+            {
+                builder.startObject("bool");
+                {
+                    // filter 조건
+                    builder.startArray("filter");
+                    {
+                        // depthOne → term (직군 하나)
+                        builder.startObject();
+                        {
+                            builder.startObject("terms")
+                                    .field("depthOne", List.of(user.getJobGroup().getJobGroupName()))
+                                    .endObject();
+                        }
+                        builder.endObject();
 
-    @Async
-    public void getFullRecommendationsAsync() {
+                        // depthTwo → terms (직무 여러개)
+                        builder.startObject();
+                        {
+                            builder.startObject("terms")
+                                    .field("depthTwo",
+                                            user.getUserJobPositions().stream()
+                                                    .map(pos -> pos.getJobPosition().getJobPositionName().getDisplay())
+                                                    .toList())
+                                    .endObject();
+                        }
+                        builder.endObject();
+
+                        // educationLevel → range
+                        builder.startObject();
+                        {
+                            builder.startObject("range");
+                            {
+                                builder.startObject("educationLevel")
+                                        .field("lte", user.getEducation().getLevel())
+                                        .endObject();
+                            }
+                            builder.endObject();
+                        }
+                        builder.endObject();
+
+                        // career → range
+                        builder.startObject();
+                        {
+                            builder.startObject("range");
+                            {
+                                builder.startObject("career")
+                                        .field("lte", user.getWorkExperience())
+                                        .endObject();
+                            }
+                            builder.endObject();
+                        }
+                        builder.endObject();
+                    }
+                    builder.endArray();
+
+                    // must → knn 검색
+                    builder.startArray("must");
+                    {
+                        builder.startObject();
+                        {
+                            builder.startObject("knn");
+                            {
+                                builder.startObject("embedding");
+                                {
+                                    builder.field("vector", welfareEmbedding);
+                                    builder.field("k", 200 );
+                                }
+                                builder.endObject();
+                            }
+                            builder.endObject();
+                        }
+                        builder.endObject();
+                    }
+                    builder.endArray();
+                }
+                builder.endObject();
+            }
+            builder.endObject();
+        }
+        builder.endObject();
+
+        return Strings.toString(builder);
     }
 
+
+    // 응답 파싱 후 JobRecommend 매핑 -> JobPostingRecruitmentType 매핑 후 객체 그래프 생성 메서드
     @SuppressWarnings("unchecked")
     private JobRecommend parseJobPosting(Map<String, Object> source) {
         Object companyObj = source.get("company");
         Map<String, Object> company = null;
-
 
         try {
             if (companyObj instanceof Map) {
@@ -304,16 +362,7 @@ public class RecommendService {
         return jobRecommend;
     }
 
-    private String getFirstValue(Object value) {
-        if (value == null) return null;
-        if (value instanceof java.util.List) {
-            List<?> list = (List<?>) value;
-            return list.isEmpty() ? null : list.get(0).toString();
-        }
-        return value.toString();
-    }
-
-
+    // 회사 유형별 비율 조절 메서드
     private List<JobRecommend> distributeByCompanyRatio(List<JobRecommend> candidates,
                                                         Map<String, Double> ratio,
                                                         int totalCount) {
@@ -340,6 +389,15 @@ public class RecommendService {
             }
         }
         return result;
+    }
+
+    private String getFirstValue(Object value) {
+        if (value == null) return null;
+        if (value instanceof java.util.List) {
+            List<?> list = (List<?>) value;
+            return list.isEmpty() ? null : list.get(0).toString();
+        }
+        return value.toString();
     }
 
 }

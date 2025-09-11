@@ -170,21 +170,25 @@ public class OnboardingService {
             }
         }
 
-        // 빠른 추천 (동기) -> 응답에 포함
+        // 빠른 추천 (동기 처리 메서드) -> 응답에 포함
         List<JobRecommend> quickRecommendations = recommendService.getQuickRecommendations(
-                user, request.getWelfareList(), request.getCompanyRatio()
-        );
+                user, request.getWelfareList());
 
         System.out.println(quickRecommendations);
 
-        // 4. 전체 추천 (비동기)
-        recommendService.getFullRecommendationsAsync();
+        // 전체 추천 (비동기 처리 메서드)
+        recommendService.getFullRecommendationsAsync(user, request.getWelfareList(), request.getCompanyRatio());
+
+
+        // ================= 거리 필터링 =========================
 
 
 
+        // =====================================================
 
 
 
+        // 거리 필터링 후 SearchDto로 출력
         return null;
     }
 }

@@ -41,6 +41,8 @@ public class JobRecommend extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Education education;
 
+    private Integer workExperience;
+
     @OneToMany(mappedBy = "jobRecommend")
     private List<JobPostingJobPosition> jobPostingJobPositions = new ArrayList<>();
 

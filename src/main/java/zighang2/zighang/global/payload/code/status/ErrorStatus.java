@@ -51,8 +51,9 @@ public enum ErrorStatus implements BaseErrorCode {
     TMAP_TRANSIT_MAPPING_FAILED(HttpStatus.BAD_REQUEST, "TMAP_2202", "대중교통 요약 응답에서 totalTime을 찾지 못했습니다."),
 
     // JOB 관련 에러 6000
-    JOBGROUP_NOT_FOUND(HttpStatus.NOT_FOUND, "JOBGROUP_6001", "해당하는 직군이 존재하지 않습니다."),
-    JOBPOSITION_NOT_FOUND(HttpStatus.NOT_FOUND, "JOBPOSITION_6002", "해당하는 직무가 존재하지 않습니다."),
+    JOBRECOMMEND_NOT_FOUND(HttpStatus.NOT_FOUND, "JOBRECOMMEND_6001", "해당하는 공고가 존재하지 않습니다."),
+    JOBGROUP_NOT_FOUND(HttpStatus.NOT_FOUND, "JOBGROUP_6002", "해당하는 직군이 존재하지 않습니다."),
+    JOBPOSITION_NOT_FOUND(HttpStatus.NOT_FOUND, "JOBPOSITION_6003", "해당하는 직무가 존재하지 않습니다."),
 
     // COMPANY TYPE 관련 에러 7000
     COMPANY_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "COMPANYTYPE_7001","해당하는 기업 유형이 존재하지 않습니다."),

@@ -1,8 +1,7 @@
 package zighang2.zighang.web.domain.enums;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import zighang2.zighang.global.payload.code.status.ErrorStatus;
+import java.util.Arrays;
+import java.util.Optional;
 
 public enum JobPositionEnum {
     // IT·개발
@@ -18,7 +17,7 @@ public enum JobPositionEnum {
     시스템소프트웨어("시스템소프트웨어"),
     소프트웨어_엔지니어("소프트웨어 엔지니어"),
     정보보호_보안("정보보호·보안"),
-    임베디드_소프트웨어("임베디드 소프트웨어"),
+    임베디드소프트웨어("임베디드 소프트웨어"),
     로봇SW("로봇SW"),
     QA_테스트("QA·테스트"),
     사물인터넷_IoT("사물인터넷(IoT)"),
@@ -41,9 +40,9 @@ public enum JobPositionEnum {
     생성형AI("생성형AI"),
     영상_음성AI("영상·음성AI"),
     자율주행("자율주행"),
-    컴퓨터_비전("컴퓨터 비전"),
+    컴퓨터비전("컴퓨터 비전"),
     AI_비즈니스("AI 비즈니스"),
-    AI_서비스_기획("AI 서비스 기획"),
+    AI서비스기획("AI 서비스 기획"),
     AI리서치("AI리서치"),
     NLP("NLP"),
     LLM("LLM"),
@@ -132,6 +131,7 @@ public enum JobPositionEnum {
     제약_의료영업("제약·의료영업"),
     기타영업("기타 영업"),
     해외_상사영업("해외·상사영업"),
+    구매("구매"),
 
     // 무역·물류
     수출입관리_사무("수출입관리·사무"),
@@ -248,6 +248,7 @@ public enum JobPositionEnum {
     에너지("에너지"),
     환경("환경"),
     기타엔지니어링_RnD("기타엔지니어링·R&D"),
+    자동화("자동화"),
 
     // 건설/건축
     건축설계_시공("건축설계·시공"),
@@ -316,6 +317,7 @@ public enum JobPositionEnum {
     학원상담_운영("학원상담·운영"),
     교재개발_교수설계("교재개발·교수설계"),
     기타교육("기타교육"),
+    교육관리("교육관리"),
 
     // 미디어/엔터
     PD_감독("PD·감독"),
@@ -385,6 +387,22 @@ public enum JobPositionEnum {
 
     public String getDisplay() {
         return display;
+    }
+
+    public static Optional<JobPositionEnum> from(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return Optional.empty();
+        }
+
+        String normalized = value.trim().toUpperCase();
+
+        try {
+            return Optional.of(valueOf(normalized));
+        } catch (IllegalArgumentException e) {
+            return Arrays.stream(values())
+                    .filter(enumValue -> enumValue.getDisplay().equals(value.trim()))
+                    .findFirst();
+        }
     }
 
 }

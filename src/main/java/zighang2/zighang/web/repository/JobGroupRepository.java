@@ -9,5 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface JobGroupRepository extends JpaRepository<JobGroup, Long> {
-    Optional<JobGroup> findByjobGroupName(JobGroupEnum jobGroupName);
+    Optional<JobGroup> findByJobGroupName(JobGroupEnum jobGroupName);
 }

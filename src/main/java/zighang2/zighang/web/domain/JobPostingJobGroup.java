@@ -2,11 +2,15 @@ package zighang2.zighang.web.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import zighang2.zighang.global.common.BaseEntity;
 
 @Entity
 @NoArgsConstructor
+@Getter
+@Builder
 @AllArgsConstructor
 @Table(
         name = "job_posting_job_group",

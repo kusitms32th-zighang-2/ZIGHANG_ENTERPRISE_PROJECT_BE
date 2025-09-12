@@ -1,28 +1,27 @@
 package zighang2.zighang.web.domain.enums;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import zighang2.zighang.global.payload.code.status.ErrorStatus;
+import java.util.Arrays;
+import java.util.Optional;
 
 public enum JobGroupEnum {
     IT_개발("IT/개발"),
     AI_데이터("AI/데이터"),
     게임("게임"),
     디자인("디자인"),
-    기획_전략("기획/전략"),
+    기획_전략_경영("기획/전략"),
     마케팅_광고_홍보("마케팅/광고/홍보"),
     상품기획_MD("상품기획/MD"),
     영업("영업"),
     무역_물류_유통("무역/물류/유통"),
     운송_배송("운송/배송"),
     법률_법무("법률/법무"),
-    HR_총무("HR/총무"),
+    인사_노무_HRD_총무("HR/총무"),
     회계_세무_재무("회계/세무/재무"),
     증권_운영("증권/운영"),
-    은행_카드_보험("은행/카드/보험"),
-    엔지니어링_RnD("엔지니어링/R&D"),
+    은행_보험_카드_캐피탈("은행/카드/보험"),
+    엔지니어링_연구_RND("엔지니어링/R&D"),
     건설_건축("건설/건축"),
-    생산_기능직("생산/기능직"),
+    생산_기능("생산/기능직"),
     의료_보건("의료/보건"),
     공공_복지("공공/복지"),
     교육("교육"),
@@ -39,6 +38,24 @@ public enum JobGroupEnum {
 
     public String getDisplay() {
         return display;
+    }
+
+    public static Optional<JobGroupEnum> from(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return Optional.empty();
+        }
+
+        String normalized = value.trim().toUpperCase();
+
+        // 직접 매치 시도
+        try {
+            return Optional.of(valueOf(normalized));
+        } catch (IllegalArgumentException e) {
+            // 실패 시 display name으로 매치 시도
+            return Arrays.stream(values())
+                    .filter(enumValue -> enumValue.getDisplay().equals(value.trim()))
+                    .findFirst();
+        }
     }
 
 }

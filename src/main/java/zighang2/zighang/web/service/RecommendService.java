@@ -19,21 +19,13 @@ import zighang2.zighang.global.config.TmapClient;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.handler.BadRequestHandler;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
-import zighang2.zighang.web.domain.JobPostingRecruitmentType;
-import zighang2.zighang.web.domain.JobRecommend;
-import zighang2.zighang.web.domain.RecruitmentType;
-import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
-import zighang2.zighang.web.domain.enums.Education;
-import zighang2.zighang.web.domain.enums.RecruitmentTypeEnum;
-import zighang2.zighang.web.domain.enums.Transport;
+import zighang2.zighang.web.domain.*;
+import zighang2.zighang.web.domain.enums.*;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.dto.JobPostingResponseDto;
 import zighang2.zighang.web.dto.JobRecommendDto;
 import zighang2.zighang.web.dto.tmap.GeocodePoint;
-import zighang2.zighang.web.repository.JobPostingRecruitmentTypeRepository;
-import zighang2.zighang.web.repository.JobRecommendRepository;
-import zighang2.zighang.web.repository.RecruitmentTypeRepository;
-import zighang2.zighang.web.repository.UserRepository;
+import zighang2.zighang.web.repository.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -52,6 +44,8 @@ public class RecommendService {
     private final RestHighLevelClient client;
     private final EmbeddingService embeddingService;
     private final JobPostingRecruitmentTypeRepository jobPostingRecruitmentTypeRepository;
+    private final JobGroupRepository jobGroupRepository;
+    private final JobPositionRepository jobPositionRepository;
 
     public List<JobRecommendDto.JobRecommendResponseDto> get6Recommends() {
         User user = userRepository.findById(jwtProvider.getCurrentUserId())
@@ -90,12 +84,20 @@ public class RecommendService {
         return jobs.stream()
                 .map(job -> calculateSingleJobCommuteTime(job, userLocation, transport, maxMinutes))
                 .flatMap(Optional::stream)
+                .map(entry -> {
+                    JobRecommend job = entry.getKey();
+                    int commuteMinutes = (entry.getValue() + 59) / 60;
+                    return new AbstractMap.SimpleEntry<>(job, commuteMinutes);
+                })
+                .filter(entry->{
+                    int commuteMinutes = entry.getValue();
+                    return commuteMinutes <= maxMinutes;
+                })
                 .collect(Collectors.toList());
     }
 
     private Optional<Map.Entry<JobRecommend, Integer>> calculateSingleJobCommuteTime(JobRecommend job,
-                                                                                     GeocodePoint userLocation, Transport transport,
-                                                                                     int maxMinutes) {
+                                                                                     GeocodePoint userLocation, Transport transport, int maxMinutes) {
         try {
             GeocodePoint companyLocation = tmapClient.geocodeAddress(job.getRecruitmentAddress());
             int commuteSeconds = switch (transport) {
@@ -141,13 +143,14 @@ public class RecommendService {
                     .toList();
 
             // ================= 거리 필터링 =========================
-
-
-
+            List<Map.Entry<JobRecommend, Integer>> commuteFilteredEntries = this.calculateJobCommuteTimes(candidates, user);
+            List<JobRecommend> filteredCandidates = commuteFilteredEntries.stream()
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
 
             // =====================================================
 
-            List<JobRecommend> distributed = distributeByCompanyRatio(candidates, companyRatio, 100);
+            List<JobRecommend> distributed = distributeByCompanyRatio(filteredCandidates, companyRatio, 100);
 
             // User 연관관계 설정
             distributed.forEach(job -> job.setUser(user));
@@ -162,6 +165,7 @@ public class RecommendService {
                 }
             });
 
+
             log.info("Full Recommendations 저장 완료: {}개", distributed.size());
 
 
@@ -169,7 +173,6 @@ public class RecommendService {
             e.printStackTrace();
             log.error("getFullRecommendationsAsync 실패: {}", e.getMessage());
         }
-
     }
 
     public List<JobRecommend> getQuickRecommendations(User user,
@@ -361,6 +364,56 @@ public class RecommendService {
                 }
             }
         }
+
+        Object jobGroupsObj = source.get("depthOne");
+        System.out.println("jobGroupsObj = " + jobGroupsObj);
+        if (jobGroupsObj instanceof List<?> jobGroupList) {
+            Set<String> groupNames = jobGroupList.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toSet());
+
+            for (String g : groupNames) {
+                JobGroupEnum.from(g).ifPresentOrElse(
+                        groupEnum -> {
+                            JobGroup jobGroup = jobGroupRepository.findByJobGroupName(groupEnum)
+                                    .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBGROUP_NOT_FOUND));
+
+                            JobPostingJobGroup jobPostingJobGroup = JobPostingJobGroup.builder()
+                                    .jobRecommend(jobRecommend)
+                                    .jobGroup(jobGroup)
+                                    .build();
+
+                            jobRecommend.getJobPostingJobGroups().add(jobPostingJobGroup);
+                            }, () -> log.warn("Unknown or invalid jobGroup value: '{}'. Skipping.", g)
+                );
+            }
+        }
+
+        Object jobPositionsObj = source.get("depthTwo");
+        System.out.println("jobPositionsObj = " + jobPositionsObj);
+        if (jobPositionsObj instanceof List<?> jobPositionList) {
+            Set<String> posNames = jobPositionList.stream()
+                    .map(Object::toString)
+                    .map(this::normalizeJobPositionName)
+                    .collect(Collectors.toSet());
+
+            for (String p : posNames) {
+                JobPositionEnum.from(p).ifPresentOrElse(
+                        posEnum -> {
+                            JobPosition jobPosition = jobPositionRepository.findByJobPositionName(posEnum)
+                                    .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBPOSITION_NOT_FOUND));
+
+                            JobPostingJobPosition jobPostingJobPosition = JobPostingJobPosition.builder()
+                                    .jobRecommend(jobRecommend)
+                                    .jobPosition(jobPosition)
+                                    .build();
+
+                            jobRecommend.getJobPostingJobPositions().add(jobPostingJobPosition);
+                            } , () -> log.warn("Unknown or invalid jobPosition value: '{}'. Skipping.", p)
+                );
+            }
+        }
+
         return jobRecommend;
     }
 
@@ -400,6 +453,16 @@ public class RecommendService {
             return list.isEmpty() ? null : list.get(0).toString();
         }
         return value.toString();
+    }
+
+    private String normalizeJobPositionName(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        // 앞뒤 공백 제거
+        String trimmed = raw.trim();
+        String replaced = trimmed.replaceAll("·+", "_");
+        return replaced;
     }
 
     @Transactional(readOnly = true)

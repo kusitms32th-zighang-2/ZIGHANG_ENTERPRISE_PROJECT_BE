@@ -2,6 +2,7 @@ package zighang2.zighang.web.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import zighang2.zighang.global.common.BaseEntity;
@@ -10,6 +11,7 @@ import zighang2.zighang.global.common.BaseEntity;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Builder
 @Table(name = "job_posting_job_position",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"job_position_id", "job_recommend_id"})

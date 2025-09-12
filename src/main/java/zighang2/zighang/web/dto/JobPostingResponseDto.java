@@ -26,10 +26,10 @@ public class JobPostingResponseDto {
         private Integer workExperience;
         @Schema(description = "학력", example = "학력 무관")
         private String education;
-        @Schema(description = "직무", example = "[프론트엔드, 서버_백엔드]")
+        @Schema(description = "직무", example = "'['프론트엔드', '서버_백엔드']'")
         private List<String> jobPositions;
-        @Schema(description = "근무 형태", example = "전환형 인턴")
-        private String recruitmentType;
+        @Schema(description = "근무 형태", example = "'['전환형인턴', '정규직']'")
+        private List<String> recruitmentType;
         @Schema(description = "주소", example = "서울특별시 00구 00대로 123")
         private String recruitmentAddress;
         @Schema(description = "공고 이미지")
@@ -46,7 +46,10 @@ public class JobPostingResponseDto {
                             .map(jp->jp.getJobPosition().getJobPositionName().getDisplay())
                             .toList()
                     )
-//                    .recruitmentType(jobRecommend.getRecruitmentType().getDisplayName())
+                    .recruitmentType(jobRecommend.getJobPostingRecruitmentTypes().stream()
+                            .map(jr->jr.getRecruitmentType().getRecruitmentType().getDisplayName())
+                            .toList()
+                    )
                     .recruitmentAddress(jobRecommend.getRecruitmentAddress())
                     .content(jobRecommend.getContent())
                     .build();

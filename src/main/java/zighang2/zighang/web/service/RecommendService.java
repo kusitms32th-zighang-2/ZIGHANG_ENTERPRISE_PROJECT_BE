@@ -373,6 +373,7 @@ public class RecommendService {
         }
 
         Object jobGroupsObj = source.get("depthOne");
+        System.out.println("jobGroupsObj = " + jobGroupsObj);
         if (jobGroupsObj instanceof List<?> jobGroupList) {
             Set<String> groupNames = jobGroupList.stream()
                     .map(Object::toString)
@@ -397,9 +398,11 @@ public class RecommendService {
         }
 
         Object jobPositionsObj = source.get("depthTwo");
+        System.out.println("jobPositionsObj = " + jobPositionsObj);
         if (jobPositionsObj instanceof List<?> jobPositionList) {
             Set<String> posNames = jobPositionList.stream()
                     .map(Object::toString)
+                    .map(this::normalizeJobPositionName)
                     .collect(Collectors.toSet());
 
             for (String p : posNames) {
@@ -459,6 +462,16 @@ public class RecommendService {
             return list.isEmpty() ? null : list.get(0).toString();
         }
         return value.toString();
+    }
+
+    private String normalizeJobPositionName(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        // 앞뒤 공백 제거
+        String trimmed = raw.trim();
+        String replaced = trimmed.replaceAll("·+", "_");
+        return replaced;
     }
 
     @Transactional(readOnly = true)

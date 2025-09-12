@@ -123,7 +123,7 @@ public class OnboardingService {
         OnboardingCharacter character = onboardingRepository.findById(request.getCharacterId())
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.CHARACTER_NOT_FOUND));
 
-        JobGroup jobGroup = jobGroupRepository.findByjobGroupName(request.getJobGroupEnum())
+        JobGroup jobGroup = jobGroupRepository.findByJobGroupName(request.getJobGroupEnum())
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBGROUP_NOT_FOUND));
 
         user.updateOnboardingInfo(

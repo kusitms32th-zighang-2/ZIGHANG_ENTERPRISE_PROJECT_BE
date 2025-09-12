@@ -19,21 +19,13 @@ import zighang2.zighang.global.config.TmapClient;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.handler.BadRequestHandler;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
-import zighang2.zighang.web.domain.JobPostingRecruitmentType;
-import zighang2.zighang.web.domain.JobRecommend;
-import zighang2.zighang.web.domain.RecruitmentType;
-import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
-import zighang2.zighang.web.domain.enums.Education;
-import zighang2.zighang.web.domain.enums.RecruitmentTypeEnum;
-import zighang2.zighang.web.domain.enums.Transport;
+import zighang2.zighang.web.domain.*;
+import zighang2.zighang.web.domain.enums.*;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.dto.JobPostingResponseDto;
 import zighang2.zighang.web.dto.JobRecommendDto;
 import zighang2.zighang.web.dto.tmap.GeocodePoint;
-import zighang2.zighang.web.repository.JobPostingRecruitmentTypeRepository;
-import zighang2.zighang.web.repository.JobRecommendRepository;
-import zighang2.zighang.web.repository.RecruitmentTypeRepository;
-import zighang2.zighang.web.repository.UserRepository;
+import zighang2.zighang.web.repository.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -52,6 +44,8 @@ public class RecommendService {
     private final RestHighLevelClient client;
     private final EmbeddingService embeddingService;
     private final JobPostingRecruitmentTypeRepository jobPostingRecruitmentTypeRepository;
+    private final JobGroupRepository jobGroupRepository;
+    private final JobPositionRepository jobPositionRepository;
 
     public List<JobRecommendDto.JobRecommendResponseDto> get6Recommends() {
         User user = userRepository.findById(jwtProvider.getCurrentUserId())
@@ -171,6 +165,7 @@ public class RecommendService {
                 }
             });
 
+
             log.info("Full Recommendations 저장 완료: {}개", distributed.size());
 
 
@@ -178,7 +173,6 @@ public class RecommendService {
             e.printStackTrace();
             log.error("getFullRecommendationsAsync 실패: {}", e.getMessage());
         }
-
     }
 
     public List<JobRecommend> getQuickRecommendations(User user,
@@ -377,6 +371,55 @@ public class RecommendService {
                 }
             }
         }
+
+        Object jobGroupsObj = source.get("depthOne");
+        if (jobGroupsObj instanceof List<?> jobGroupList) {
+            Set<String> groupNames = jobGroupList.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toSet());
+
+            for (String g : groupNames) {
+                try {
+                    JobGroupEnum groupEnum = JobGroupEnum.valueOf(g);
+                    JobGroup jobGroup = jobGroupRepository.findByJobGroupName(groupEnum)
+                            .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBGROUP_NOT_FOUND));
+
+                    JobPostingJobGroup jobPostingJobGroup = JobPostingJobGroup.builder()
+                            .jobRecommend(jobRecommend)
+                            .jobGroup(jobGroup)
+                            .build();
+
+                    jobRecommend.getJobPostingJobGroups().add(jobPostingJobGroup);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Unknown jobGroup value: {}", g);
+                }
+            }
+        }
+
+        Object jobPositionsObj = source.get("depthTwo");
+        if (jobPositionsObj instanceof List<?> jobPositionList) {
+            Set<String> posNames = jobPositionList.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toSet());
+
+            for (String p : posNames) {
+                try {
+                    JobPositionEnum posEnum = JobPositionEnum.valueOf(p);
+                    JobPosition jobPosition = jobPositionRepository.findByJobPositionName(posEnum)
+                            .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBPOSITION_NOT_FOUND));
+
+                    JobPostingJobPosition jobPostingJobPosition = JobPostingJobPosition.builder()
+                            .jobRecommend(jobRecommend)
+                            .jobPosition(jobPosition)
+                            .build();
+
+                    jobRecommend.getJobPostingJobPositions().add(jobPostingJobPosition);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Unknown jobPosition value: {}", p);
+                }
+            }
+        }
+
         return jobRecommend;
     }
 

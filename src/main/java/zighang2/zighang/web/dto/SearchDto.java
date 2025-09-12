@@ -41,7 +41,7 @@ public class SearchDto {
         private String companyName; //회사이름
         private String companyAddress; //회사 주소
         private List<String> jobPositions;
-        private List<String> jobGroup;
+        private List<String> jobGroups;
         private String companyType;
         private Integer commuteTimeMinutes; // 정밀 계산 값
 
@@ -50,13 +50,15 @@ public class SearchDto {
                     .title(jobRec.getTitle())
                     .companyName(jobRec.getCompanyName())
                     .companyAddress(jobRec.getRecruitmentAddress())
-                    .jobGroup(jobRec.getJobPostingJobGroups().stream()
+                    .jobGroups(jobRec.getJobPostingJobGroups() == null ? List.of()
+                            : jobRec.getJobPostingJobGroups().stream()
                             .map(jg->jg.getJobGroup().getJobGroupName().getDisplay())
                             .toList())
-                    .jobPositions(jobRec.getJobPostingJobPositions().stream()
+                    .jobPositions(jobRec.getJobPostingJobPositions() == null ? List.of()
+                            : jobRec.getJobPostingJobPositions().stream()
                             .map(jp -> jp.getJobPosition().getJobPositionName().getDisplay())
                             .toList())
-                    .companyType(jobRec.getCompanyType().getDisplay())
+                    .companyType(jobRec.getCompanyType() != null ? jobRec.getCompanyType().getDisplay() : null)
                     .commuteTimeMinutes(commuteTimeMinutes)
                     .build();
         }

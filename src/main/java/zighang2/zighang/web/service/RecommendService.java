@@ -202,13 +202,6 @@ public class RecommendService {
             // 후보군 파싱
             List<JobRecommend> candidates = Arrays.stream(searchResponse.getHits().getHits())
                     .map(hit -> parseJobPosting(hit.getSourceAsMap()))
-                    .peek(jobRec -> {
-                        if (jobRec.getJobPostingJobGroups() == null) {
-                            log.warn("JobRecommend with id {} has null jobPostingJobGroups!", jobRec.getId());
-                        } else if (jobRec.getJobPostingJobGroups().isEmpty()) {
-                            log.info("JobRecommend with id {} has empty jobPostingJobGroups", jobRec.getId());
-                        }
-                    })
                     .toList();
 
             System.out.println("candidates = " + candidates);
@@ -380,20 +373,19 @@ public class RecommendService {
                     .collect(Collectors.toSet());
 
             for (String g : groupNames) {
-                try {
-                    JobGroupEnum groupEnum = JobGroupEnum.valueOf(g);
-                    JobGroup jobGroup = jobGroupRepository.findByJobGroupName(groupEnum)
-                            .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBGROUP_NOT_FOUND));
+                JobGroupEnum.from(g).ifPresentOrElse(
+                        groupEnum -> {
+                            JobGroup jobGroup = jobGroupRepository.findByJobGroupName(groupEnum)
+                                    .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBGROUP_NOT_FOUND));
 
-                    JobPostingJobGroup jobPostingJobGroup = JobPostingJobGroup.builder()
-                            .jobRecommend(jobRecommend)
-                            .jobGroup(jobGroup)
-                            .build();
+                            JobPostingJobGroup jobPostingJobGroup = JobPostingJobGroup.builder()
+                                    .jobRecommend(jobRecommend)
+                                    .jobGroup(jobGroup)
+                                    .build();
 
-                    jobRecommend.getJobPostingJobGroups().add(jobPostingJobGroup);
-                } catch (IllegalArgumentException e) {
-                    log.warn("Unknown jobGroup value: {}", g);
-                }
+                            jobRecommend.getJobPostingJobGroups().add(jobPostingJobGroup);
+                            }, () -> log.warn("Unknown or invalid jobGroup value: '{}'. Skipping.", g)
+                );
             }
         }
 
@@ -406,20 +398,19 @@ public class RecommendService {
                     .collect(Collectors.toSet());
 
             for (String p : posNames) {
-                try {
-                    JobPositionEnum posEnum = JobPositionEnum.valueOf(p);
-                    JobPosition jobPosition = jobPositionRepository.findByJobPositionName(posEnum)
-                            .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBPOSITION_NOT_FOUND));
+                JobPositionEnum.from(p).ifPresentOrElse(
+                        posEnum -> {
+                            JobPosition jobPosition = jobPositionRepository.findByJobPositionName(posEnum)
+                                    .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBPOSITION_NOT_FOUND));
 
-                    JobPostingJobPosition jobPostingJobPosition = JobPostingJobPosition.builder()
-                            .jobRecommend(jobRecommend)
-                            .jobPosition(jobPosition)
-                            .build();
+                            JobPostingJobPosition jobPostingJobPosition = JobPostingJobPosition.builder()
+                                    .jobRecommend(jobRecommend)
+                                    .jobPosition(jobPosition)
+                                    .build();
 
-                    jobRecommend.getJobPostingJobPositions().add(jobPostingJobPosition);
-                } catch (IllegalArgumentException e) {
-                    log.warn("Unknown jobPosition value: {}", p);
-                }
+                            jobRecommend.getJobPostingJobPositions().add(jobPostingJobPosition);
+                            } , () -> log.warn("Unknown or invalid jobPosition value: '{}'. Skipping.", p)
+                );
             }
         }
 

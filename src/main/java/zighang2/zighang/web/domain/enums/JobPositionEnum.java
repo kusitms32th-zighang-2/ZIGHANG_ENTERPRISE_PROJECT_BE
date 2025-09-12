@@ -1,5 +1,8 @@
 package zighang2.zighang.web.domain.enums;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 public enum JobPositionEnum {
     // IT·개발
     서버_백엔드("서버·백엔드"),
@@ -384,6 +387,22 @@ public enum JobPositionEnum {
 
     public String getDisplay() {
         return display;
+    }
+
+    public static Optional<JobPositionEnum> from(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return Optional.empty();
+        }
+
+        String normalized = value.trim().toUpperCase();
+
+        try {
+            return Optional.of(valueOf(normalized));
+        } catch (IllegalArgumentException e) {
+            return Arrays.stream(values())
+                    .filter(enumValue -> enumValue.getDisplay().equals(value.trim()))
+                    .findFirst();
+        }
     }
 
 }

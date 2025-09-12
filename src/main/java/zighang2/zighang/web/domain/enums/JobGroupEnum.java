@@ -1,5 +1,8 @@
 package zighang2.zighang.web.domain.enums;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 public enum JobGroupEnum {
     IT_개발("IT/개발"),
     AI_데이터("AI/데이터"),
@@ -35,6 +38,24 @@ public enum JobGroupEnum {
 
     public String getDisplay() {
         return display;
+    }
+
+    public static Optional<JobGroupEnum> from(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return Optional.empty();
+        }
+
+        String normalized = value.trim().toUpperCase();
+
+        // 직접 매치 시도
+        try {
+            return Optional.of(valueOf(normalized));
+        } catch (IllegalArgumentException e) {
+            // 실패 시 display name으로 매치 시도
+            return Arrays.stream(values())
+                    .filter(enumValue -> enumValue.getDisplay().equals(value.trim()))
+                    .findFirst();
+        }
     }
 
 }

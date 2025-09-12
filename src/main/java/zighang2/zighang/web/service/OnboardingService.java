@@ -182,6 +182,8 @@ public class OnboardingService {
 
         // 필터링된 추천 목록을 응답 DTO로 변환
         List<SearchDto.SearchResponse> recommendationDtoList = commuteFilteredEntries.stream()
+                .sorted(Comparator.comparingInt(Map.Entry::getValue))
+                .limit(6)
                 .map(jobRec -> SearchDto.SearchResponse.of(jobRec.getKey(),jobRec.getValue()))
                 .collect(Collectors.toList());
 

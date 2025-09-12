@@ -2,21 +2,19 @@ package zighang2.zighang.web.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.GeneralException;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
-import zighang2.zighang.global.service.RedisService;
 import zighang2.zighang.web.domain.*;
 import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
 import zighang2.zighang.web.domain.enums.JobPositionEnum;
-import zighang2.zighang.web.domain.enums.UserRole;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.domain.user.UserCompanyType;
 import zighang2.zighang.web.domain.user.UserJobPosition;
 import zighang2.zighang.web.dto.OnboardingDto;
+import zighang2.zighang.web.dto.SearchDto;
 import zighang2.zighang.web.repository.*;
 
 import java.util.*;
@@ -49,7 +47,7 @@ public class OnboardingService {
                 .collect(Collectors.groupingBy(ans -> ans, Collectors.counting()));
 
         List<CompanyTypeEnum> companyTypeEnums = Arrays.stream(CompanyTypeEnum.values())
-                .filter(ct -> ct != CompanyTypeEnum.MIXED)
+                .filter(ct -> ct != CompanyTypeEnum.PUBLIC && ct != CompanyTypeEnum.MIXED)
                 .toList();
 
         Map<CompanyTypeEnum, Double> companyRatio = new LinkedHashMap<>();
@@ -179,16 +177,20 @@ public class OnboardingService {
         // 전체 추천 (비동기 처리 메서드)
         recommendService.getFullRecommendationsAsync(user, request.getWelfareList(), request.getCompanyRatio());
 
-
         // ================= 거리 필터링 =========================
+        List<Map.Entry<JobRecommend,Integer>> commuteFilteredEntries = recommendService.calculateJobCommuteTimes(quickRecommendations,user);
 
+        // 필터링된 추천 목록을 응답 DTO로 변환
+        List<SearchDto.SearchResponse> recommendationDtoList = commuteFilteredEntries.stream()
+                .map(jobRec -> SearchDto.SearchResponse.of(jobRec.getKey(),jobRec.getValue()))
+                .collect(Collectors.toList());
 
+        // 거리 필터링 후 OnboardingSignupResponse DTO 반환
+        return OnboardingDto.OnboardingSignupResponse.builder()
+                .characterId(character.getId())
+                .characterName(character.getCharacterName().getDisplayName())
+                .jobRecommends(recommendationDtoList)
+                .build();
 
-        // =====================================================
-
-
-
-        // 거리 필터링 후 SearchDto로 출력
-        return null;
     }
 }

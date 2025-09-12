@@ -90,12 +90,20 @@ public class RecommendService {
         return jobs.stream()
                 .map(job -> calculateSingleJobCommuteTime(job, userLocation, transport, maxMinutes))
                 .flatMap(Optional::stream)
+                .map(entry -> {
+                    JobRecommend job = entry.getKey();
+                    int commuteMinutes = (entry.getValue() + 59) / 60;
+                    return new AbstractMap.SimpleEntry<>(job, commuteMinutes);
+                })
+                .filter(entry->{
+                    int commuteMinutes = entry.getValue();
+                    return commuteMinutes <= maxMinutes;
+                })
                 .collect(Collectors.toList());
     }
 
     private Optional<Map.Entry<JobRecommend, Integer>> calculateSingleJobCommuteTime(JobRecommend job,
-                                                                                     GeocodePoint userLocation, Transport transport,
-                                                                                     int maxMinutes) {
+                                                                                     GeocodePoint userLocation, Transport transport, int maxMinutes) {
         try {
             GeocodePoint companyLocation = tmapClient.geocodeAddress(job.getRecruitmentAddress());
             int commuteSeconds = switch (transport) {
@@ -141,13 +149,14 @@ public class RecommendService {
                     .toList();
 
             // ================= 거리 필터링 =========================
-
-
-
+            List<Map.Entry<JobRecommend, Integer>> commuteFilteredEntries = this.calculateJobCommuteTimes(candidates, user);
+            List<JobRecommend> filteredCandidates = commuteFilteredEntries.stream()
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
 
             // =====================================================
 
-            List<JobRecommend> distributed = distributeByCompanyRatio(candidates, companyRatio, 100);
+            List<JobRecommend> distributed = distributeByCompanyRatio(filteredCandidates, companyRatio, 100);
 
             // User 연관관계 설정
             distributed.forEach(job -> job.setUser(user));
@@ -199,6 +208,13 @@ public class RecommendService {
             // 후보군 파싱
             List<JobRecommend> candidates = Arrays.stream(searchResponse.getHits().getHits())
                     .map(hit -> parseJobPosting(hit.getSourceAsMap()))
+                    .peek(jobRec -> {
+                        if (jobRec.getJobPostingJobGroups() == null) {
+                            log.warn("JobRecommend with id {} has null jobPostingJobGroups!", jobRec.getId());
+                        } else if (jobRec.getJobPostingJobGroups().isEmpty()) {
+                            log.info("JobRecommend with id {} has empty jobPostingJobGroups", jobRec.getId());
+                        }
+                    })
                     .toList();
 
             System.out.println("candidates = " + candidates);

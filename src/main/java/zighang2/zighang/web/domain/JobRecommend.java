@@ -43,13 +43,15 @@ public class JobRecommend extends BaseEntity {
 
     private Integer workExperience;
 
-    @OneToMany(mappedBy = "jobRecommend")
+    @OneToMany(mappedBy = "jobRecommend",cascade = CascadeType.ALL)
+    @Builder.Default
     private List<JobPostingJobPosition> jobPostingJobPositions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "jobRecommend")
+    @OneToMany(mappedBy = "jobRecommend",cascade = CascadeType.ALL)
+    @Builder.Default
     private List<JobPostingJobGroup> jobPostingJobGroups = new ArrayList<>();
 
-    @OneToMany(mappedBy = "jobRecommend")
+    @OneToMany(mappedBy = "jobRecommend",cascade = CascadeType.ALL)
     @Builder.Default
     private List<JobPostingRecruitmentType> jobPostingRecruitmentTypes = new ArrayList<>();
 

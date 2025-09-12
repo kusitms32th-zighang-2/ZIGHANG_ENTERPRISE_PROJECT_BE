@@ -57,9 +57,13 @@ public class OnboardingDto {
     @AllArgsConstructor
     @Builder
     public static class OnboardingSignupResponse {
-        // 회원정보
+        // 온보딩 캐릭터 정보
+        private Long characterId;
+        private String characterName;
 
         // 공고데이터
+        private List<SearchDto.SearchResponse> jobRecommends;
+
 
     }
 

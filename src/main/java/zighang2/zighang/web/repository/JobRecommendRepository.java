@@ -19,4 +19,7 @@ public interface JobRecommendRepository extends JpaRepository<JobRecommend, Long
 
     // 첫 로딩용
     List<JobRecommend> findTop10ByUserOrderByIdDesc(User user);
+
+    // user 데이터로 모두 지우기
+    void deleteAllByUser(User user);
 }

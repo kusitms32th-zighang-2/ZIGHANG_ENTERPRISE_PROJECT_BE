@@ -49,7 +49,7 @@ public class OnboardingDto {
         private List<CompanyTypeEnum> companyList;
 
         private List<String> welfareList;
-        private Map<String, Double> companyRatio;
+        private Map<CompanyTypeEnum, Double> companyRatio;
 
     }
 

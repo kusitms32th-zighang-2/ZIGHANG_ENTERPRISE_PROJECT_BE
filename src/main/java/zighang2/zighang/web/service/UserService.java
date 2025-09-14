@@ -1,11 +1,13 @@
 package zighang2.zighang.web.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
+import zighang2.zighang.global.service.RedisService;
 import zighang2.zighang.web.domain.CompanyType;
 import zighang2.zighang.web.domain.JobGroup;
 import zighang2.zighang.web.domain.JobPosition;
@@ -19,10 +21,12 @@ import zighang2.zighang.web.repository.*;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@EnableAsync
 public class UserService {
 
     private final UserRepository userRepository;
@@ -32,6 +36,9 @@ public class UserService {
     private final UserJobPositionRepository userJobPositionRepository;
     private final CompanyTypeRepository companyTypeRepository;
     private final UserCompanyTypeRepository userCompanyTypeRepository;
+    private final RecommendService recommendService;
+    private final JobRecommendRepository jobRecommendRepository;
+    private final RedisService redisService;
 
     @Transactional
     public UserDto.MypageModifyResponse modifyUserInfo(UserDto.MypageModifyRequest mypageModifyRequest) {
@@ -73,8 +80,6 @@ public class UserService {
             }
         }
 
-
-
         List<UserCompanyType> companyTypeExisting = userCompanyTypeRepository.findByUserId(user.getId());
         Set<CompanyTypeEnum> newCompanyTypes = new HashSet<>(mypageModifyRequest.getCompanyTypes());
 
@@ -84,7 +89,6 @@ public class UserService {
                 userCompanyTypeRepository.flush();
             }
         }
-
 
         for (CompanyTypeEnum companyTypeEnum : newCompanyTypes) {
             boolean alreadyExists = companyTypeExisting.stream()
@@ -110,6 +114,18 @@ public class UserService {
                 mypageModifyRequest.getMaxCommuteMinutes(),
                 mypageModifyRequest.getReceivingEmail()
         );
+
+        // jobRecommend 관련 데이터 모두 삭제
+        jobRecommendRepository.deleteAllByUser(user);
+
+        // Redis에서 기업비율 정보, 복지 리스트 가져오기
+        List<String> welfareList = redisService.getWelfareList(userId);
+        System.out.println("welfareList = " + welfareList.toString());
+        Map<CompanyTypeEnum, Double> companyRatio = redisService.getCompanyRatio(userId);
+        System.out.println("companyRatio = " + companyRatio.toString());
+
+        // 비동기 처리 (공고 재추천 후 -> 저장)
+        recommendService.getFullRecommendationsAsync(user, welfareList, companyRatio);
 
         return UserDto.MypageModifyResponse.of(user);
     }

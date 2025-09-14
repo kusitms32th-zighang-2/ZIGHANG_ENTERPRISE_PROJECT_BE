@@ -12,6 +12,7 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.xcontent.*;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@EnableAsync
 public class RecommendService {
 
     private final TmapClient tmapClient;
@@ -118,7 +120,7 @@ public class RecommendService {
     @Async
     public void getFullRecommendationsAsync(User user,
                                             List<String> welfareList,
-                                            Map<String, Double> companyRatio) {
+                                            Map<CompanyTypeEnum, Double> companyRatio) {
         try {
             float[] welfareEmbedding = embeddingService.getEmbedding(welfareList);
             String queryJson = buildQuery(user, welfareEmbedding);
@@ -442,7 +444,7 @@ public class RecommendService {
 
     // 회사 유형별 비율 조절 메서드
     private List<JobRecommend> distributeByCompanyRatio(List<JobRecommend> candidates,
-                                                        Map<String, Double> ratio,
+                                                        Map<CompanyTypeEnum, Double> ratio,
                                                         int totalCount) {
         // 후보군을 회사 유형별로 그룹핑
         Map<CompanyTypeEnum, List<JobRecommend>> grouped = candidates.stream()
@@ -451,9 +453,9 @@ public class RecommendService {
 
         List<JobRecommend> result = new ArrayList<>();
 
-        for (Map.Entry<String, Double> entry : ratio.entrySet()) {
+        for (Map.Entry<CompanyTypeEnum, Double> entry : ratio.entrySet()) {
             try {
-                CompanyTypeEnum type = CompanyTypeEnum.valueOf(entry.getKey());
+                CompanyTypeEnum type = entry.getKey();
                 double percent = entry.getValue();
 
                 int count = (int) Math.round(totalCount * percent);

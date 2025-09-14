@@ -7,6 +7,7 @@ import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.GeneralException;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
+import zighang2.zighang.global.service.RedisService;
 import zighang2.zighang.web.domain.*;
 import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
 import zighang2.zighang.web.domain.enums.JobPositionEnum;
@@ -33,6 +34,7 @@ public class OnboardingService {
     private final CompanyTypeRepository companyTypeRepository;
     private final UserCompanyTypeRepository userCompanyTypeRepository;
     private final RecommendService recommendService;
+    private final RedisService redisService;
 
     public OnboardingDto.OnboardingResponse getOnboardingCharacter(OnboardingDto.OnboardingRequest request) {
 
@@ -119,6 +121,10 @@ public class OnboardingService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
+
+        // 유저 온보딩 정보 Redis 저장.
+        redisService.saveCompanyRatio(userId, request.getCompanyRatio());
+        redisService.saveWelfareList(userId, request.getWelfareList());
 
         OnboardingCharacter character = onboardingRepository.findById(request.getCharacterId())
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.CHARACTER_NOT_FOUND));

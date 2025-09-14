@@ -58,4 +58,21 @@ public class JobPostingResponseDto {
                     .build();
         }
     }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class JobPostingListDto {
+        private Long jobPostingId;
+        private String companyName;
+        private String jobPostingTitle;
+        private String workExperience;
+        private List<String> recruitmentType;
+        private String education;
+        private Integer commuteMinutes; // 저장해야함
+        private String welfare;
+
+
+    }
 }

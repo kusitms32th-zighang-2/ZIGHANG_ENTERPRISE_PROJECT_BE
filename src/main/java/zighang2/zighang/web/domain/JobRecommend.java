@@ -47,6 +47,8 @@ public class JobRecommend extends BaseEntity {
     @Column(length = 50)
     private String welfare;
 
+    private Integer commuteMinutes;
+
     @OneToMany(mappedBy = "jobRecommend",cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<JobPostingJobPosition> jobPostingJobPositions = new ArrayList<>();

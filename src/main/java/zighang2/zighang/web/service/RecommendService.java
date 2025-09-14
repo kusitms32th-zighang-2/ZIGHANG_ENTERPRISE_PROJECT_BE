@@ -87,6 +87,7 @@ public class RecommendService {
                 .map(entry -> {
                     JobRecommend job = entry.getKey();
                     int commuteMinutes = (entry.getValue() + 59) / 60;
+                    job.setCommuteMinutes(commuteMinutes);
                     return new AbstractMap.SimpleEntry<>(job, commuteMinutes);
                 })
                 .filter(entry->{

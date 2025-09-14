@@ -25,4 +25,10 @@ public class UserController {
     public ApiResponse<UserDto.MyPageDto> getUsersInfo() {
         return ApiResponse.onSuccess(userService.getMypage());
     }
+
+//    @Operation(summary = "마이페이지 결과 전체보기 API", description = "마이페이지 결과 전체보기 조회 API입니다.")
+//    @GetMapping("/my-page/all")
+//    public ApiResponse<UserDto.MyPageDto> getUsersResultInfo() {
+//        return ApiResponse.onSuccess(userService.getMypage());
+//    }
 }

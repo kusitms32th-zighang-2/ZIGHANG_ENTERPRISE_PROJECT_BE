@@ -514,7 +514,7 @@ public class RecommendService {
                         .jobPostingId(job.getId())
                         .companyName(job.getCompanyName())
                         .jobPostingTitle(job.getTitle())
-                        .workExperience(job.getWorkExperience())
+                        .workExperience(formatWorkExperience(job.getWorkExperience()))
                         .recruitmentType(
                                 job.getJobPostingRecruitmentTypes().stream()
                                         .map(rt -> rt.getRecruitmentType().getRecruitmentType().name())
@@ -535,5 +535,42 @@ public class RecommendService {
                 .build();
 
 
+    }
+
+    private String formatWorkExperience(String workExpRaw) {
+        if (workExpRaw == null || workExpRaw.isBlank()) {
+            return null;
+        }
+
+        List<Integer> values = Arrays.stream(workExpRaw.split(","))
+                .map(String::trim)
+                .map(Integer::parseInt)
+                .toList();
+
+        List<String> result = new ArrayList<>();
+
+        if (values.contains(-1)) {
+            result.add("경력무관");
+        }
+        if (values.contains(0)) {
+            result.add("신입");
+        }
+
+        List<Integer> positives = values.stream()
+                .filter(v -> v > 0)
+                .sorted()
+                .toList();
+
+        if (!positives.isEmpty()) {
+            int min = positives.get(0);
+            int max = positives.get(positives.size() - 1);
+            if (min == max) {
+                result.add(min + "년 이상");
+            } else {
+                result.add(min + "~" + max + "년");
+            }
+        }
+
+        return String.join("/", result);
     }
 }

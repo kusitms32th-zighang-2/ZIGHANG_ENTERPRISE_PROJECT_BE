@@ -64,7 +64,6 @@ public class OnboardingDto {
         // 공고데이터
         private List<SearchDto.SearchResponse> jobRecommends;
 
-
     }
 
 }

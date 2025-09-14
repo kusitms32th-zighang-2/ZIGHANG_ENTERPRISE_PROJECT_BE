@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import zighang2.zighang.global.payload.ApiResponse;
+import zighang2.zighang.web.dto.SearchDto;
 import zighang2.zighang.web.dto.UserDto;
 import zighang2.zighang.web.service.UserService;
 
@@ -26,9 +27,9 @@ public class UserController {
         return ApiResponse.onSuccess(userService.getMypage());
     }
 
-//    @Operation(summary = "마이페이지 결과 전체보기 API", description = "마이페이지 결과 전체보기 조회 API입니다.")
-//    @GetMapping("/my-page/all")
-//    public ApiResponse<UserDto.MyPageDto> getUsersResultInfo() {
-//        return ApiResponse.onSuccess(userService.getMypage());
-//    }
+    @Operation(summary = "마이페이지 결과 전체보기 API", description = "마이페이지 결과 전체보기 조회 API입니다.")
+    @GetMapping("/my-page/all")
+    public ApiResponse<UserDto.MyPageAllResponse> getUsersResultInfo() {
+        return ApiResponse.onSuccess(userService.getMypageAll());
+    }
 }

@@ -37,6 +37,18 @@ public class UserDto {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor(access = PROTECTED)
+    public static class MyPageAllResponse {
+        private Long id;
+        private Long characterId;
+
+        List<SearchDto.SearchResponse_2> searchResponses;
+    }
+
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor(access = PROTECTED)
     public static class MypageModifyRequest {
         private JobGroupEnum jobGroups;
         private List<JobPositionEnum> jobPositions;
@@ -97,4 +109,6 @@ public class UserDto {
                 .role(user.getUserRole())
                 .build();
     }
+
+
 }

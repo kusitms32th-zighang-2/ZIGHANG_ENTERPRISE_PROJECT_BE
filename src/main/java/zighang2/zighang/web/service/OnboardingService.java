@@ -35,6 +35,7 @@ public class OnboardingService {
     private final UserCompanyTypeRepository userCompanyTypeRepository;
     private final RecommendService recommendService;
     private final RedisService redisService;
+    private final JobRecommendRepository jobRecommendRepository;
 
     public OnboardingDto.OnboardingResponse getOnboardingCharacter(OnboardingDto.OnboardingRequest request) {
 
@@ -180,18 +181,39 @@ public class OnboardingService {
 
         System.out.println(quickRecommendations);
 
-        // 전체 추천 (비동기 처리 메서드)
-        recommendService.getFullRecommendationsAsync(user, request.getWelfareList(), request.getCompanyRatio());
-
         // ================= 거리 필터링 =========================
         List<Map.Entry<JobRecommend,Integer>> commuteFilteredEntries = recommendService.calculateJobCommuteTimes(quickRecommendations,user);
 
-        // 필터링된 추천 목록을 응답 DTO로 변환
-        List<SearchDto.SearchResponse> recommendationDtoList = commuteFilteredEntries.stream()
+
+        // 필터링된 추천 목록 6개 추출
+        List<Map.Entry<JobRecommend, Integer>> top6Entries = commuteFilteredEntries.stream()
                 .sorted(Comparator.comparingInt(Map.Entry::getValue))
                 .limit(6)
-                .map(jobRec -> SearchDto.SearchResponse.of(jobRec.getKey(),jobRec.getValue()))
+                .toList();
+
+        // DB 저장 (온보딩 시점 추천 6개만 저장)
+        List<JobRecommend> top6Recommends = top6Entries.stream()
+                .map(entry -> {
+                    JobRecommend job = entry.getKey();
+                    job.setCommuteMinutes(entry.getValue());
+                    return job;
+                })
+                .toList();
+
+        jobRecommendRepository.saveAll(top6Recommends);
+
+        // 필터링을 위한 Id값 확보
+        jobRecommendRepository.flush();
+
+        // 전체 추천 (비동기 처리 메서드)
+        recommendService.getFullRecommendationsAsync(user, request.getWelfareList(), request.getCompanyRatio());
+
+
+        // 응답 DTO 변환
+        List<SearchDto.SearchResponse> recommendationDtoList = top6Entries.stream()
+                .map(jobRec -> SearchDto.SearchResponse.of(jobRec.getKey(), jobRec.getValue()))
                 .collect(Collectors.toList());
+
 
         // 거리 필터링 후 OnboardingSignupResponse DTO 반환
         return OnboardingDto.OnboardingSignupResponse.builder()

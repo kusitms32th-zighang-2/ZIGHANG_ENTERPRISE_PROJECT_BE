@@ -11,11 +11,13 @@ import zighang2.zighang.global.service.RedisService;
 import zighang2.zighang.web.domain.CompanyType;
 import zighang2.zighang.web.domain.JobGroup;
 import zighang2.zighang.web.domain.JobPosition;
+import zighang2.zighang.web.domain.JobRecommend;
 import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
 import zighang2.zighang.web.domain.enums.JobPositionEnum;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.domain.user.UserCompanyType;
 import zighang2.zighang.web.domain.user.UserJobPosition;
+import zighang2.zighang.web.dto.SearchDto;
 import zighang2.zighang.web.dto.UserDto;
 import zighang2.zighang.web.repository.*;
 
@@ -166,5 +168,24 @@ public class UserService {
                 .MypageModifyResponse(modifyResponse)
                 .build();
 
+    }
+
+    public UserDto.MyPageAllResponse getMypageAll() {
+        Long userId = jwtProvider.getCurrentUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
+
+        // 온보딩 시점 추천 6개
+        List<JobRecommend> top6 = jobRecommendRepository.findTop6ByUserIdOrderByIdAsc(userId);
+
+        List<SearchDto.SearchResponse_2> searchResponses = top6.stream()
+                .map(SearchDto.SearchResponse_2::of)
+                .toList();
+
+        return UserDto.MyPageAllResponse.builder()
+                .id(user.getId())
+                .characterId(user.getOnboardingCharacter().getId())
+                .searchResponses(searchResponses)
+                .build();
     }
 }

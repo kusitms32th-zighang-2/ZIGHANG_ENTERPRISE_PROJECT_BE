@@ -160,18 +160,26 @@ public class RecommendService {
             // User 연관관계 설정
             distributed.forEach(job -> job.setUser(user));
 
+            List<Long> existingIds = jobRecommendRepository.findByUser(user).stream()
+                    .map(JobRecommend::getId) // 이미 DB에 저장된 추천들의 PK
+                    .toList();
+
+            List<JobRecommend> newRecommendations = distributed.stream()
+                    .filter(job -> job.getId() == null || !existingIds.contains(job.getId()))
+                    .toList();
+
             // JobRecommend 저장
-            jobRecommendRepository.saveAll(distributed);
+            jobRecommendRepository.saveAll(newRecommendations);
 
             // JobPostingRecruitmentType 저장
-            distributed.forEach(job -> {
+            newRecommendations.forEach(job -> {
                 if (!job.getJobPostingRecruitmentTypes().isEmpty()) {
                     jobPostingRecruitmentTypeRepository.saveAll(job.getJobPostingRecruitmentTypes());
                 }
             });
 
 
-            log.info("Full Recommendations 저장 완료: {}개", distributed.size());
+            log.info("Full Recommendations 저장 완료: {}개", newRecommendations.size());
 
 
         } catch (Exception e) {
@@ -209,6 +217,8 @@ public class RecommendService {
                     .map(hit -> parseJobPosting(hit.getSourceAsMap()))
                     .toList();
 
+            // user 연관관계 설정
+            candidates.forEach(job -> job.setUser(user));
             System.out.println("candidates = " + candidates);
             // 출력
             return candidates;

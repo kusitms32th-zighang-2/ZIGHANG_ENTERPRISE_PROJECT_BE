@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import zighang2.zighang.web.domain.JobRecommend;
 import zighang2.zighang.web.domain.user.User;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -22,4 +23,8 @@ public interface JobRecommendRepository extends JpaRepository<JobRecommend, Long
 
     // user 데이터로 모두 지우기
     void deleteAllByUser(User user);
+
+    List<JobRecommend> findByUser(User user);
+
+    List<JobRecommend> findTop6ByUserIdOrderByIdAsc(Long userId);
 }

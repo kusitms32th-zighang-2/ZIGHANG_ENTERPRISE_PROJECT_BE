@@ -87,6 +87,7 @@ public class RecommendService {
                 .map(entry -> {
                     JobRecommend job = entry.getKey();
                     int commuteMinutes = (entry.getValue() + 59) / 60;
+                    job.setCommuteMinutes(commuteMinutes);
                     return new AbstractMap.SimpleEntry<>(job, commuteMinutes);
                 })
                 .filter(entry->{
@@ -324,7 +325,15 @@ public class RecommendService {
             log.warn("Failed to parse company field: {}", companyObj, e);
         }
 
+        // career 처리
+        String workExperience = getString(source.get("career"));
+
+        // welfare_list 처리
+        String welfare = getString(source.get("welfare_list"));
+
         JobRecommend jobRecommend = JobRecommend.builder()
+                .workExperience(workExperience)
+                .welfare(welfare)
                 .title((String) source.getOrDefault("title", ""))
                 .companyName(company != null ? (String) company.getOrDefault("companyName", "") : "")
                 .recruitmentAddress((String) source.getOrDefault("recruitmentAddress", ""))
@@ -399,22 +408,34 @@ public class RecommendService {
 
             for (String p : posNames) {
                 JobPositionEnum.from(p).ifPresentOrElse(
-                        posEnum -> {
-                            JobPosition jobPosition = jobPositionRepository.findByJobPositionName(posEnum)
-                                    .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBPOSITION_NOT_FOUND));
-
-                            JobPostingJobPosition jobPostingJobPosition = JobPostingJobPosition.builder()
-                                    .jobRecommend(jobRecommend)
-                                    .jobPosition(jobPosition)
-                                    .build();
-
-                            jobRecommend.getJobPostingJobPositions().add(jobPostingJobPosition);
-                            } , () -> log.warn("Unknown or invalid jobPosition value: '{}'. Skipping.", p)
+                        posEnum -> jobPositionRepository.findByJobPositionName(posEnum)
+                                .ifPresentOrElse(
+                                        jobPosition -> {
+                                            JobPostingJobPosition jobPostingJobPosition = JobPostingJobPosition.builder()
+                                                    .jobRecommend(jobRecommend)
+                                                    .jobPosition(jobPosition)
+                                                    .build();
+                                            jobRecommend.getJobPostingJobPositions().add(jobPostingJobPosition);
+                                        },
+                                        () -> log.warn("JobPositionEnum '{}' 은 있지만 DB에 존재하지 않음. Skipping.", posEnum)
+                                ),
+                        () -> log.warn("Unknown or invalid jobPosition value: '{}'. Skipping.", p)
                 );
             }
         }
 
         return jobRecommend;
+    }
+
+    private String getString(Object obj) {
+        if (obj instanceof List<?>) {
+            return ((List<?>) obj).stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining("/"));
+        } else if (obj != null) {
+            return obj.toString();
+        }
+        return "";
     }
 
     // 회사 유형별 비율 조절 메서드
@@ -471,5 +492,48 @@ public class RecommendService {
                 .orElseThrow(()-> new NotFoundHandler(ErrorStatus.JOBRECOMMEND_NOT_FOUND));
 
         return JobPostingResponseDto.JobPostingDetailDto.of(jobRecommend);
+    }
+
+    @Transactional(readOnly = true)
+    public JobPostingResponseDto.JobPostingListWrapper getJobPostings(Long lastId) {
+        User user = userRepository.findById(jwtProvider.getCurrentUserId())
+                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
+
+        List<JobRecommend> jobs;
+
+        if (lastId == null) {
+            // 첫 로딩: 최신 10개
+            jobs = jobRecommendRepository.findTop10ByUserOrderByIdDesc(user);
+        } else {
+            // lastId보다 작은 id 10개
+            jobs = jobRecommendRepository.findTop10ByUserAndIdLessThanOrderByIdDesc(user, lastId);
+        }
+
+        List<JobPostingResponseDto.JobPostingListDto> jobDtos = jobs.stream()
+                .map(job -> JobPostingResponseDto.JobPostingListDto.builder()
+                        .jobPostingId(job.getId())
+                        .companyName(job.getCompanyName())
+                        .jobPostingTitle(job.getTitle())
+                        .workExperience(job.getWorkExperience())
+                        .recruitmentType(
+                                job.getJobPostingRecruitmentTypes().stream()
+                                        .map(rt -> rt.getRecruitmentType().getRecruitmentType().name())
+                                        .toList()
+                        )
+                        .education(job.getEducation() != null ? job.getEducation().name() : null)
+                        .commuteMinutes(job.getCommuteMinutes())
+                        .welfare(job.getWelfare())
+                        .build()
+                )
+                .toList();
+
+        boolean hasNext = jobs.size() == 10;
+
+        return JobPostingResponseDto.JobPostingListWrapper.builder()
+                .jobs(jobDtos)
+                .hasNext(hasNext)
+                .build();
+
+
     }
 }

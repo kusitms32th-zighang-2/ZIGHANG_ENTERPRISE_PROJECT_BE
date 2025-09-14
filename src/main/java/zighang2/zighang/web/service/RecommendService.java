@@ -19,6 +19,7 @@ import zighang2.zighang.global.config.TmapClient;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.handler.BadRequestHandler;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
+import zighang2.zighang.global.utils.WorkExperienceFormatter;
 import zighang2.zighang.web.domain.*;
 import zighang2.zighang.web.domain.enums.*;
 import zighang2.zighang.web.domain.user.User;
@@ -46,6 +47,7 @@ public class RecommendService {
     private final JobPostingRecruitmentTypeRepository jobPostingRecruitmentTypeRepository;
     private final JobGroupRepository jobGroupRepository;
     private final JobPositionRepository jobPositionRepository;
+    private final WorkExperienceFormatter workExperienceFormatter;
 
     public List<JobRecommendDto.JobRecommendResponseDto> get6Recommends() {
         User user = userRepository.findById(jwtProvider.getCurrentUserId())
@@ -491,6 +493,9 @@ public class RecommendService {
         JobRecommend jobRecommend = jobRecommendRepository.findById(jobPostingId)
                 .orElseThrow(()-> new NotFoundHandler(ErrorStatus.JOBRECOMMEND_NOT_FOUND));
 
+        String workExperience = workExperienceFormatter.formatWorkExperience(jobRecommend.getWorkExperience());
+        jobRecommend.updateWorkExperience(workExperience);
+
         return JobPostingResponseDto.JobPostingDetailDto.of(jobRecommend);
     }
 
@@ -514,7 +519,7 @@ public class RecommendService {
                         .jobPostingId(job.getId())
                         .companyName(job.getCompanyName())
                         .jobPostingTitle(job.getTitle())
-                        .workExperience(formatWorkExperience(job.getWorkExperience()))
+                        .workExperience(workExperienceFormatter.formatWorkExperience(job.getWorkExperience()))
                         .recruitmentType(
                                 job.getJobPostingRecruitmentTypes().stream()
                                         .map(rt -> rt.getRecruitmentType().getRecruitmentType().name())
@@ -537,40 +542,5 @@ public class RecommendService {
 
     }
 
-    private String formatWorkExperience(String workExpRaw) {
-        if (workExpRaw == null || workExpRaw.isBlank()) {
-            return null;
-        }
 
-        List<Integer> values = Arrays.stream(workExpRaw.split(","))
-                .map(String::trim)
-                .map(Integer::parseInt)
-                .toList();
-
-        List<String> result = new ArrayList<>();
-
-        if (values.contains(-1)) {
-            result.add("경력무관");
-        }
-        if (values.contains(0)) {
-            result.add("신입");
-        }
-
-        List<Integer> positives = values.stream()
-                .filter(v -> v > 0)
-                .sorted()
-                .toList();
-
-        if (!positives.isEmpty()) {
-            int min = positives.get(0);
-            int max = positives.get(positives.size() - 1);
-            if (min == max) {
-                result.add(min + "년 이상");
-            } else {
-                result.add(min + "~" + max + "년");
-            }
-        }
-
-        return String.join("/", result);
-    }
 }

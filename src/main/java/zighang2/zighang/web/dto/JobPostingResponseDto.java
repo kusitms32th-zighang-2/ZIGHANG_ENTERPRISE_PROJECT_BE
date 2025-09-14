@@ -22,8 +22,10 @@ public class JobPostingResponseDto {
         private String jobPostingTitle;
         @Schema(description = "회사명", example = "직행")
         private String companyName;
-        @Schema(description = "경력",example = "1")
-        private Integer workExperience;
+        @Schema(description = "경력")
+        private String workExperience;
+        @Schema(description = "경력")
+        private String welfare;
         @Schema(description = "학력", example = "학력 무관")
         private String education;
         @Schema(description = "직무", example = "'['프론트엔드', '서버_백엔드']'")
@@ -41,6 +43,7 @@ public class JobPostingResponseDto {
                     .jobPostingTitle(jobRecommend.getTitle())
                     .companyName(jobRecommend.getCompanyName())
                     .education(jobRecommend.getEducation().getDisplayName())
+                    .welfare(jobRecommend.getWelfare())
                     .workExperience(jobRecommend.getWorkExperience())
                     .jobPositions(jobRecommend.getJobPostingJobPositions().stream()
                             .map(jp->jp.getJobPosition().getJobPositionName().getDisplay())

@@ -41,7 +41,11 @@ public class JobRecommend extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Education education;
 
-    private Integer workExperience;
+    @Column(length = 50)
+    private String workExperience;
+
+    @Column(length = 50)
+    private String welfare;
 
     @OneToMany(mappedBy = "jobRecommend",cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

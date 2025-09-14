@@ -324,7 +324,15 @@ public class RecommendService {
             log.warn("Failed to parse company field: {}", companyObj, e);
         }
 
+        // career 처리
+        String workExperience = getString(source.get("career"));
+
+        // welfare_list 처리
+        String welfare = getString(source.get("welfare_list"));
+
         JobRecommend jobRecommend = JobRecommend.builder()
+                .workExperience(workExperience)
+                .welfare(welfare)
                 .title((String) source.getOrDefault("title", ""))
                 .companyName(company != null ? (String) company.getOrDefault("companyName", "") : "")
                 .recruitmentAddress((String) source.getOrDefault("recruitmentAddress", ""))
@@ -399,22 +407,34 @@ public class RecommendService {
 
             for (String p : posNames) {
                 JobPositionEnum.from(p).ifPresentOrElse(
-                        posEnum -> {
-                            JobPosition jobPosition = jobPositionRepository.findByJobPositionName(posEnum)
-                                    .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBPOSITION_NOT_FOUND));
-
-                            JobPostingJobPosition jobPostingJobPosition = JobPostingJobPosition.builder()
-                                    .jobRecommend(jobRecommend)
-                                    .jobPosition(jobPosition)
-                                    .build();
-
-                            jobRecommend.getJobPostingJobPositions().add(jobPostingJobPosition);
-                            } , () -> log.warn("Unknown or invalid jobPosition value: '{}'. Skipping.", p)
+                        posEnum -> jobPositionRepository.findByJobPositionName(posEnum)
+                                .ifPresentOrElse(
+                                        jobPosition -> {
+                                            JobPostingJobPosition jobPostingJobPosition = JobPostingJobPosition.builder()
+                                                    .jobRecommend(jobRecommend)
+                                                    .jobPosition(jobPosition)
+                                                    .build();
+                                            jobRecommend.getJobPostingJobPositions().add(jobPostingJobPosition);
+                                        },
+                                        () -> log.warn("JobPositionEnum '{}' 은 있지만 DB에 존재하지 않음. Skipping.", posEnum)
+                                ),
+                        () -> log.warn("Unknown or invalid jobPosition value: '{}'. Skipping.", p)
                 );
             }
         }
 
         return jobRecommend;
+    }
+
+    private String getString(Object obj) {
+        if (obj instanceof List<?>) {
+            return ((List<?>) obj).stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining("/"));
+        } else if (obj != null) {
+            return obj.toString();
+        }
+        return "";
     }
 
     // 회사 유형별 비율 조절 메서드

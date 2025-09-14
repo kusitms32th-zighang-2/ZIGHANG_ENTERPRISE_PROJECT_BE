@@ -61,7 +61,7 @@ public class JobRecommend extends BaseEntity {
     @Builder.Default
     private List<JobPostingRecruitmentType> jobPostingRecruitmentTypes = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "user_id")
     private User user;
 

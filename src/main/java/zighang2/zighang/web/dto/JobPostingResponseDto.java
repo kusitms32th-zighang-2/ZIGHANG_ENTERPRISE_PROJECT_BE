@@ -70,9 +70,17 @@ public class JobPostingResponseDto {
         private String workExperience;
         private List<String> recruitmentType;
         private String education;
-        private Integer commuteMinutes; // 저장해야함
+        private Integer commuteMinutes;
         private String welfare;
 
+    }
 
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class JobPostingListWrapper {
+        private List<JobPostingListDto> jobs;
+        private boolean hasNext;
     }
 }

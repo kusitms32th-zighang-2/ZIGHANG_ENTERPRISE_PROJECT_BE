@@ -493,4 +493,47 @@ public class RecommendService {
 
         return JobPostingResponseDto.JobPostingDetailDto.of(jobRecommend);
     }
+
+    @Transactional(readOnly = true)
+    public JobPostingResponseDto.JobPostingListWrapper getJobPostings(Long lastId) {
+        User user = userRepository.findById(jwtProvider.getCurrentUserId())
+                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
+
+        List<JobRecommend> jobs;
+
+        if (lastId == null) {
+            // 첫 로딩: 최신 10개
+            jobs = jobRecommendRepository.findTop10ByUserOrderByIdDesc(user);
+        } else {
+            // lastId보다 작은 id 10개
+            jobs = jobRecommendRepository.findTop10ByUserAndIdLessThanOrderByIdDesc(user, lastId);
+        }
+
+        List<JobPostingResponseDto.JobPostingListDto> jobDtos = jobs.stream()
+                .map(job -> JobPostingResponseDto.JobPostingListDto.builder()
+                        .jobPostingId(job.getId())
+                        .companyName(job.getCompanyName())
+                        .jobPostingTitle(job.getTitle())
+                        .workExperience(job.getWorkExperience())
+                        .recruitmentType(
+                                job.getJobPostingRecruitmentTypes().stream()
+                                        .map(rt -> rt.getRecruitmentType().getRecruitmentType().name())
+                                        .toList()
+                        )
+                        .education(job.getEducation() != null ? job.getEducation().name() : null)
+                        .commuteMinutes(job.getCommuteMinutes())
+                        .welfare(job.getWelfare())
+                        .build()
+                )
+                .toList();
+
+        boolean hasNext = jobs.size() == 10;
+
+        return JobPostingResponseDto.JobPostingListWrapper.builder()
+                .jobs(jobDtos)
+                .hasNext(hasNext)
+                .build();
+
+
+    }
 }

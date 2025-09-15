@@ -23,8 +23,8 @@ public class AuthController {
 
     @PostMapping("/login/kakao")
     @Operation(summary = "카카오 로그인", description = "인가 코드를 통해 토큰을 발급받는 카카오 로그인 API입니다.")
-    public ApiResponse<TokenResponseDto.LoginTokenResponseDto> kakaoLogin(@RequestParam("code") String accessCode) {
-        return ApiResponse.onSuccess(authService.oAuthLogin(accessCode));
+    public ApiResponse<TokenResponseDto.LoginTokenResponseDto> kakaoLogin(@RequestParam("code") String accessCode, @RequestParam("redirectUri") String redirectUri) {
+        return ApiResponse.onSuccess(authService.oAuthLogin(accessCode,redirectUri));
     }
 
     @GetMapping("/refresh-token")

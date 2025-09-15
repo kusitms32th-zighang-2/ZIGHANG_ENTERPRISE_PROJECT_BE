@@ -40,6 +40,7 @@ public class UserDto {
     public static class MyPageAllResponse {
         private Long id;
         private Long characterId;
+        private String characterName;
 
         List<SearchDto.SearchResponse_2> searchResponses;
     }

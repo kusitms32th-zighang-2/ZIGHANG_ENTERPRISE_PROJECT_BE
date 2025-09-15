@@ -1,15 +1,14 @@
 package zighang2.zighang.web.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import zighang2.zighang.global.utils.WorkExperienceFormatter;
 import zighang2.zighang.web.domain.JobRecommend;
 
 import java.util.List;
 
 public class JobPostingResponseDto {
+
 
     @Getter
     @Builder
@@ -22,8 +21,10 @@ public class JobPostingResponseDto {
         private String jobPostingTitle;
         @Schema(description = "회사명", example = "직행")
         private String companyName;
-        @Schema(description = "경력",example = "1")
-        private Integer workExperience;
+        @Schema(description = "경력")
+        private String workExperience;
+        @Schema(description = "경력")
+        private String welfare;
         @Schema(description = "학력", example = "학력 무관")
         private String education;
         @Schema(description = "직무", example = "'['프론트엔드', '서버_백엔드']'")
@@ -41,6 +42,7 @@ public class JobPostingResponseDto {
                     .jobPostingTitle(jobRecommend.getTitle())
                     .companyName(jobRecommend.getCompanyName())
                     .education(jobRecommend.getEducation().getDisplayName())
+                    .welfare(jobRecommend.getWelfare())
                     .workExperience(jobRecommend.getWorkExperience())
                     .jobPositions(jobRecommend.getJobPostingJobPositions().stream()
                             .map(jp->jp.getJobPosition().getJobPositionName().getDisplay())
@@ -54,5 +56,30 @@ public class JobPostingResponseDto {
                     .content(jobRecommend.getContent())
                     .build();
         }
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class JobPostingListDto {
+        private Long jobPostingId;
+        private String companyName;
+        private String jobPostingTitle;
+        private String workExperience;
+        private List<String> recruitmentType;
+        private String education;
+        private Integer commuteMinutes;
+        private String welfare;
+
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class JobPostingListWrapper {
+        private List<JobPostingListDto> jobs;
+        private boolean hasNext;
     }
 }

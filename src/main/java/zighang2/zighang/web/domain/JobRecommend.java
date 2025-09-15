@@ -41,7 +41,13 @@ public class JobRecommend extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Education education;
 
-    private Integer workExperience;
+    @Column(length = 50)
+    private String workExperience;
+
+    @Column(length = 50)
+    private String welfare;
+
+    private Integer commuteMinutes;
 
     @OneToMany(mappedBy = "jobRecommend",cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -55,8 +61,11 @@ public class JobRecommend extends BaseEntity {
     @Builder.Default
     private List<JobPostingRecruitmentType> jobPostingRecruitmentTypes = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "user_id")
     private User user;
 
+    public void updateWorkExperience(String workExperience) {
+        this.workExperience = workExperience;
+    }
 }

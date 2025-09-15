@@ -12,6 +12,7 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.xcontent.*;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
@@ -19,6 +20,7 @@ import zighang2.zighang.global.config.TmapClient;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.handler.BadRequestHandler;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
+import zighang2.zighang.global.utils.WorkExperienceFormatter;
 import zighang2.zighang.web.domain.*;
 import zighang2.zighang.web.domain.enums.*;
 import zighang2.zighang.web.domain.user.User;
@@ -34,6 +36,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@EnableAsync
 public class RecommendService {
 
     private final TmapClient tmapClient;
@@ -46,6 +49,7 @@ public class RecommendService {
     private final JobPostingRecruitmentTypeRepository jobPostingRecruitmentTypeRepository;
     private final JobGroupRepository jobGroupRepository;
     private final JobPositionRepository jobPositionRepository;
+    private final WorkExperienceFormatter workExperienceFormatter;
 
     public List<JobRecommendDto.JobRecommendResponseDto> get6Recommends() {
         User user = userRepository.findById(jwtProvider.getCurrentUserId())
@@ -87,6 +91,7 @@ public class RecommendService {
                 .map(entry -> {
                     JobRecommend job = entry.getKey();
                     int commuteMinutes = (entry.getValue() + 59) / 60;
+                    job.setCommuteMinutes(commuteMinutes);
                     return new AbstractMap.SimpleEntry<>(job, commuteMinutes);
                 })
                 .filter(entry->{
@@ -115,7 +120,7 @@ public class RecommendService {
     @Async
     public void getFullRecommendationsAsync(User user,
                                             List<String> welfareList,
-                                            Map<String, Double> companyRatio) {
+                                            Map<CompanyTypeEnum, Double> companyRatio) {
         try {
             float[] welfareEmbedding = embeddingService.getEmbedding(welfareList);
             String queryJson = buildQuery(user, welfareEmbedding);
@@ -155,18 +160,26 @@ public class RecommendService {
             // User 연관관계 설정
             distributed.forEach(job -> job.setUser(user));
 
+            List<Long> existingIds = jobRecommendRepository.findByUser(user).stream()
+                    .map(JobRecommend::getId) // 이미 DB에 저장된 추천들의 PK
+                    .toList();
+
+            List<JobRecommend> newRecommendations = distributed.stream()
+                    .filter(job -> job.getId() == null || !existingIds.contains(job.getId()))
+                    .toList();
+
             // JobRecommend 저장
-            jobRecommendRepository.saveAll(distributed);
+            jobRecommendRepository.saveAll(newRecommendations);
 
             // JobPostingRecruitmentType 저장
-            distributed.forEach(job -> {
+            newRecommendations.forEach(job -> {
                 if (!job.getJobPostingRecruitmentTypes().isEmpty()) {
                     jobPostingRecruitmentTypeRepository.saveAll(job.getJobPostingRecruitmentTypes());
                 }
             });
 
 
-            log.info("Full Recommendations 저장 완료: {}개", distributed.size());
+            log.info("Full Recommendations 저장 완료: {}개", newRecommendations.size());
 
 
         } catch (Exception e) {
@@ -204,6 +217,8 @@ public class RecommendService {
                     .map(hit -> parseJobPosting(hit.getSourceAsMap()))
                     .toList();
 
+            // user 연관관계 설정
+            candidates.forEach(job -> job.setUser(user));
             System.out.println("candidates = " + candidates);
             // 출력
             return candidates;
@@ -324,7 +339,15 @@ public class RecommendService {
             log.warn("Failed to parse company field: {}", companyObj, e);
         }
 
+        // career 처리
+        String workExperience = getString(source.get("career"));
+
+        // welfare_list 처리
+        String welfare = getString(source.get("welfare_list"));
+
         JobRecommend jobRecommend = JobRecommend.builder()
+                .workExperience(workExperience)
+                .welfare(welfare)
                 .title((String) source.getOrDefault("title", ""))
                 .companyName(company != null ? (String) company.getOrDefault("companyName", "") : "")
                 .recruitmentAddress((String) source.getOrDefault("recruitmentAddress", ""))
@@ -399,17 +422,18 @@ public class RecommendService {
 
             for (String p : posNames) {
                 JobPositionEnum.from(p).ifPresentOrElse(
-                        posEnum -> {
-                            JobPosition jobPosition = jobPositionRepository.findByJobPositionName(posEnum)
-                                    .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBPOSITION_NOT_FOUND));
-
-                            JobPostingJobPosition jobPostingJobPosition = JobPostingJobPosition.builder()
-                                    .jobRecommend(jobRecommend)
-                                    .jobPosition(jobPosition)
-                                    .build();
-
-                            jobRecommend.getJobPostingJobPositions().add(jobPostingJobPosition);
-                            } , () -> log.warn("Unknown or invalid jobPosition value: '{}'. Skipping.", p)
+                        posEnum -> jobPositionRepository.findByJobPositionName(posEnum)
+                                .ifPresentOrElse(
+                                        jobPosition -> {
+                                            JobPostingJobPosition jobPostingJobPosition = JobPostingJobPosition.builder()
+                                                    .jobRecommend(jobRecommend)
+                                                    .jobPosition(jobPosition)
+                                                    .build();
+                                            jobRecommend.getJobPostingJobPositions().add(jobPostingJobPosition);
+                                        },
+                                        () -> log.warn("JobPositionEnum '{}' 은 있지만 DB에 존재하지 않음. Skipping.", posEnum)
+                                ),
+                        () -> log.warn("Unknown or invalid jobPosition value: '{}'. Skipping.", p)
                 );
             }
         }
@@ -417,9 +441,20 @@ public class RecommendService {
         return jobRecommend;
     }
 
+    private String getString(Object obj) {
+        if (obj instanceof List<?>) {
+            return ((List<?>) obj).stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining("/"));
+        } else if (obj != null) {
+            return obj.toString();
+        }
+        return "";
+    }
+
     // 회사 유형별 비율 조절 메서드
     private List<JobRecommend> distributeByCompanyRatio(List<JobRecommend> candidates,
-                                                        Map<String, Double> ratio,
+                                                        Map<CompanyTypeEnum, Double> ratio,
                                                         int totalCount) {
         // 후보군을 회사 유형별로 그룹핑
         Map<CompanyTypeEnum, List<JobRecommend>> grouped = candidates.stream()
@@ -428,9 +463,9 @@ public class RecommendService {
 
         List<JobRecommend> result = new ArrayList<>();
 
-        for (Map.Entry<String, Double> entry : ratio.entrySet()) {
+        for (Map.Entry<CompanyTypeEnum, Double> entry : ratio.entrySet()) {
             try {
-                CompanyTypeEnum type = CompanyTypeEnum.valueOf(entry.getKey());
+                CompanyTypeEnum type = entry.getKey();
                 double percent = entry.getValue();
 
                 int count = (int) Math.round(totalCount * percent);
@@ -470,6 +505,54 @@ public class RecommendService {
         JobRecommend jobRecommend = jobRecommendRepository.findById(jobPostingId)
                 .orElseThrow(()-> new NotFoundHandler(ErrorStatus.JOBRECOMMEND_NOT_FOUND));
 
+        String workExperience = workExperienceFormatter.formatWorkExperience(jobRecommend.getWorkExperience());
+        jobRecommend.updateWorkExperience(workExperience);
+
         return JobPostingResponseDto.JobPostingDetailDto.of(jobRecommend);
     }
+
+    @Transactional(readOnly = true)
+    public JobPostingResponseDto.JobPostingListWrapper getJobPostings(Long lastId) {
+        User user = userRepository.findById(jwtProvider.getCurrentUserId())
+                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
+
+        List<JobRecommend> jobs;
+
+        if (lastId == null) {
+            // 첫 로딩: 최신 10개
+            jobs = jobRecommendRepository.findTop10ByUserOrderByIdDesc(user);
+        } else {
+            // lastId보다 작은 id 10개
+            jobs = jobRecommendRepository.findTop10ByUserAndIdLessThanOrderByIdDesc(user, lastId);
+        }
+
+        List<JobPostingResponseDto.JobPostingListDto> jobDtos = jobs.stream()
+                .map(job -> JobPostingResponseDto.JobPostingListDto.builder()
+                        .jobPostingId(job.getId())
+                        .companyName(job.getCompanyName())
+                        .jobPostingTitle(job.getTitle())
+                        .workExperience(workExperienceFormatter.formatWorkExperience(job.getWorkExperience()))
+                        .recruitmentType(
+                                job.getJobPostingRecruitmentTypes().stream()
+                                        .map(rt -> rt.getRecruitmentType().getRecruitmentType().name())
+                                        .toList()
+                        )
+                        .education(job.getEducation() != null ? job.getEducation().name() : null)
+                        .commuteMinutes(job.getCommuteMinutes())
+                        .welfare(job.getWelfare())
+                        .build()
+                )
+                .toList();
+
+        boolean hasNext = jobs.size() == 10;
+
+        return JobPostingResponseDto.JobPostingListWrapper.builder()
+                .jobs(jobDtos)
+                .hasNext(hasNext)
+                .build();
+
+
+    }
+
+
 }

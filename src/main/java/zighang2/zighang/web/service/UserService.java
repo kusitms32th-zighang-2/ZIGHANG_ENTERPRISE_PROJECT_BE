@@ -170,6 +170,7 @@ public class UserService {
 
     }
 
+    @Transactional(readOnly = true)
     public UserDto.MyPageAllResponse getMypageAll() {
         Long userId = jwtProvider.getCurrentUserId();
         User user = userRepository.findById(userId)

@@ -1,15 +1,14 @@
 package zighang2.zighang.web.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import zighang2.zighang.global.utils.WorkExperienceFormatter;
 import zighang2.zighang.web.domain.JobRecommend;
 
 import java.util.List;
 
 public class JobPostingResponseDto {
+
 
     @Getter
     @Builder

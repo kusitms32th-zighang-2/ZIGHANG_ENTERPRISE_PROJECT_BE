@@ -12,6 +12,7 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.xcontent.*;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
@@ -19,6 +20,7 @@ import zighang2.zighang.global.config.TmapClient;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.handler.BadRequestHandler;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
+import zighang2.zighang.global.utils.WorkExperienceFormatter;
 import zighang2.zighang.web.domain.*;
 import zighang2.zighang.web.domain.enums.*;
 import zighang2.zighang.web.domain.user.User;
@@ -34,6 +36,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@EnableAsync
 public class RecommendService {
 
     private final TmapClient tmapClient;
@@ -46,6 +49,7 @@ public class RecommendService {
     private final JobPostingRecruitmentTypeRepository jobPostingRecruitmentTypeRepository;
     private final JobGroupRepository jobGroupRepository;
     private final JobPositionRepository jobPositionRepository;
+    private final WorkExperienceFormatter workExperienceFormatter;
 
     public List<JobRecommendDto.JobRecommendResponseDto> get6Recommends() {
         User user = userRepository.findById(jwtProvider.getCurrentUserId())
@@ -116,7 +120,7 @@ public class RecommendService {
     @Async
     public void getFullRecommendationsAsync(User user,
                                             List<String> welfareList,
-                                            Map<String, Double> companyRatio) {
+                                            Map<CompanyTypeEnum, Double> companyRatio) {
         try {
             float[] welfareEmbedding = embeddingService.getEmbedding(welfareList);
             String queryJson = buildQuery(user, welfareEmbedding);
@@ -156,18 +160,26 @@ public class RecommendService {
             // User 연관관계 설정
             distributed.forEach(job -> job.setUser(user));
 
+            List<Long> existingIds = jobRecommendRepository.findByUser(user).stream()
+                    .map(JobRecommend::getId) // 이미 DB에 저장된 추천들의 PK
+                    .toList();
+
+            List<JobRecommend> newRecommendations = distributed.stream()
+                    .filter(job -> job.getId() == null || !existingIds.contains(job.getId()))
+                    .toList();
+
             // JobRecommend 저장
-            jobRecommendRepository.saveAll(distributed);
+            jobRecommendRepository.saveAll(newRecommendations);
 
             // JobPostingRecruitmentType 저장
-            distributed.forEach(job -> {
+            newRecommendations.forEach(job -> {
                 if (!job.getJobPostingRecruitmentTypes().isEmpty()) {
                     jobPostingRecruitmentTypeRepository.saveAll(job.getJobPostingRecruitmentTypes());
                 }
             });
 
 
-            log.info("Full Recommendations 저장 완료: {}개", distributed.size());
+            log.info("Full Recommendations 저장 완료: {}개", newRecommendations.size());
 
 
         } catch (Exception e) {
@@ -205,6 +217,8 @@ public class RecommendService {
                     .map(hit -> parseJobPosting(hit.getSourceAsMap()))
                     .toList();
 
+            // user 연관관계 설정
+            candidates.forEach(job -> job.setUser(user));
             System.out.println("candidates = " + candidates);
             // 출력
             return candidates;
@@ -440,7 +454,7 @@ public class RecommendService {
 
     // 회사 유형별 비율 조절 메서드
     private List<JobRecommend> distributeByCompanyRatio(List<JobRecommend> candidates,
-                                                        Map<String, Double> ratio,
+                                                        Map<CompanyTypeEnum, Double> ratio,
                                                         int totalCount) {
         // 후보군을 회사 유형별로 그룹핑
         Map<CompanyTypeEnum, List<JobRecommend>> grouped = candidates.stream()
@@ -449,9 +463,9 @@ public class RecommendService {
 
         List<JobRecommend> result = new ArrayList<>();
 
-        for (Map.Entry<String, Double> entry : ratio.entrySet()) {
+        for (Map.Entry<CompanyTypeEnum, Double> entry : ratio.entrySet()) {
             try {
-                CompanyTypeEnum type = CompanyTypeEnum.valueOf(entry.getKey());
+                CompanyTypeEnum type = entry.getKey();
                 double percent = entry.getValue();
 
                 int count = (int) Math.round(totalCount * percent);
@@ -491,6 +505,9 @@ public class RecommendService {
         JobRecommend jobRecommend = jobRecommendRepository.findById(jobPostingId)
                 .orElseThrow(()-> new NotFoundHandler(ErrorStatus.JOBRECOMMEND_NOT_FOUND));
 
+        String workExperience = workExperienceFormatter.formatWorkExperience(jobRecommend.getWorkExperience());
+        jobRecommend.updateWorkExperience(workExperience);
+
         return JobPostingResponseDto.JobPostingDetailDto.of(jobRecommend);
     }
 
@@ -514,7 +531,7 @@ public class RecommendService {
                         .jobPostingId(job.getId())
                         .companyName(job.getCompanyName())
                         .jobPostingTitle(job.getTitle())
-                        .workExperience(job.getWorkExperience())
+                        .workExperience(workExperienceFormatter.formatWorkExperience(job.getWorkExperience()))
                         .recruitmentType(
                                 job.getJobPostingRecruitmentTypes().stream()
                                         .map(rt -> rt.getRecruitmentType().getRecruitmentType().name())
@@ -536,4 +553,6 @@ public class RecommendService {
 
 
     }
+
+
 }

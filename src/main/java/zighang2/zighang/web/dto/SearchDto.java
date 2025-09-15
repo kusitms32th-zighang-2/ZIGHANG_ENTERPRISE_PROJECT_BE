@@ -14,25 +14,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class SearchDto {
 
-    public static class SearchRequest {
-        // ==== 필터링 정보 ====
-        private String workExperience; // 경력
-        private Education education; // 학력
-        private JobGroupEnum jobGroupEnum; // 직군
-        private JobPositionEnum jobPositionEnum; // 직무
-
-        //
-        private Integer maxCommuteMinutes;
-        private Transport transport;
-        private String address;
-
-        // ==== 온보딩 정보 ====
-        private List<CompanyTypeEnum> companyTypeEnumList;
-        private List<String> welfareList; // redis
-        private Map<String, Double> companyRatio;
-
-    }
-
     @Getter
     @Builder
     @AllArgsConstructor
@@ -63,5 +44,20 @@ public class SearchDto {
                     .build();
         }
 
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class SearchResponse_2 {
+        private String title; // 공고 제목
+        private String companyName; //회사이름
+
+        public static SearchResponse_2 of(JobRecommend jobRec) {
+            return SearchResponse_2.builder()
+                    .title(jobRec.getTitle())
+                    .companyName(jobRec.getCompanyName())
+                    .build();
+        }
     }
 }

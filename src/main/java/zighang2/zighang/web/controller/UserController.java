@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import zighang2.zighang.global.payload.ApiResponse;
+import zighang2.zighang.web.dto.OnboardingDto;
 import zighang2.zighang.web.dto.SearchDto;
 import zighang2.zighang.web.dto.UserDto;
 import zighang2.zighang.web.service.UserService;
@@ -33,11 +34,11 @@ public class UserController {
         return ApiResponse.onSuccess(userService.getMypageAll());
     }
 
-//    @Operation(summary = "마이페이지 테스트 다시하기 API", description = "마이페이지 테스트 다시하기 API입니다.")
-//    @DeleteMapping("/my-page/re-onboarding")
-//    public ApiResponse<?> reOnboarding() {
-//        return ApiResponse.onSuccess(userService.reOnboarding());
-//    }
+    @Operation(summary = "마이페이지 테스트 다시하기 API", description = "마이페이지 테스트 다시하기 API입니다.")
+    @DeleteMapping("/my-page/re-onboarding")
+    public ApiResponse<OnboardingDto.ReOnboardingResponse> reOnboarding() {
+        return ApiResponse.onSuccess(userService.reOnboarding());
+    }
 
 
 }

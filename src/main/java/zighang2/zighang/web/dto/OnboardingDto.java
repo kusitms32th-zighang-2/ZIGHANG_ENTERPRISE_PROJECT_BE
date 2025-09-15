@@ -3,6 +3,7 @@ package zighang2.zighang.web.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import zighang2.zighang.web.domain.enums.*;
 import java.util.List;
 import java.util.Map;
@@ -65,5 +66,16 @@ public class OnboardingDto {
         private List<SearchDto.SearchResponse> jobRecommends;
 
     }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ReOnboardingResponse {
+        private Long userId;
+        private String name;
+        private String message;
+    }
+
 
 }

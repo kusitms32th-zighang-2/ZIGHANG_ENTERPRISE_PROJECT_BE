@@ -27,4 +27,6 @@ public interface JobRecommendRepository extends JpaRepository<JobRecommend, Long
     List<JobRecommend> findByUser(User user);
 
     List<JobRecommend> findTop6ByUserIdOrderByIdAsc(Long userId);
+
+    void deleteByUserId(Long userId);
 }

@@ -27,10 +27,10 @@ public class JobPosition extends BaseEntity {
     @JoinColumn(name = "job_group_id")
     private JobGroup jobGroup;
 
-    @OneToMany(mappedBy = "jobPosition", orphanRemoval=true)
+    @OneToMany(mappedBy = "jobPosition", cascade = CascadeType.ALL , orphanRemoval=true)
     private List<UserJobPosition> userJobPositions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "jobPosition")
+    @OneToMany(mappedBy = "jobPosition", cascade = CascadeType.ALL)
     private List<JobPostingJobPosition> jobPostingJobPositions = new ArrayList<>();
 
 

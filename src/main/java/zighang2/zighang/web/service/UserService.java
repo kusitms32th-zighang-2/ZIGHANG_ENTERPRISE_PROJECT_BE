@@ -17,6 +17,7 @@ import zighang2.zighang.web.domain.enums.JobPositionEnum;
 import zighang2.zighang.web.domain.user.User;
 import zighang2.zighang.web.domain.user.UserCompanyType;
 import zighang2.zighang.web.domain.user.UserJobPosition;
+import zighang2.zighang.web.dto.OnboardingDto;
 import zighang2.zighang.web.dto.SearchDto;
 import zighang2.zighang.web.dto.UserDto;
 import zighang2.zighang.web.repository.*;
@@ -191,16 +192,23 @@ public class UserService {
                 .build();
     }
 
-//    public UserDto reOnboarding() {
-//        Long userId = jwtProvider.getCurrentUserId();
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
-//
-//        userJobPositionRepository.deleteAll(user.getUserJobPositions());
-//        userCompanyTypeRepository.deleteAll(user.getUserCompanyTypes());
-//        jobRecommendRepository.deleteAll(user.getJobRecommendList());
-//
-//        // 2) 캐릭터 참조 해제
-////        user.setOnboardingCharacter(null);
-//    }
+    @Transactional
+    public OnboardingDto.ReOnboardingResponse reOnboarding() {
+        Long userId = jwtProvider.getCurrentUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
+
+        userJobPositionRepository.deleteByUserId(userId);
+        userCompanyTypeRepository.deleteByUserId(userId);
+        jobRecommendRepository.deleteByUserId(userId);
+
+        user.updateOnboardingCharacter(null);
+        user.updateUsersJobGroup(null);
+
+        return OnboardingDto.ReOnboardingResponse.builder()
+                .userId(user.getId())
+                .name(user.getName())
+                .message("온보딩 정보가 초기화되었습니다.")
+                .build();
+    }
 }

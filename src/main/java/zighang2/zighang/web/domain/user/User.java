@@ -86,9 +86,13 @@ public class User extends BaseEntity {
     }
 
     public void updateUsersJobGroup(JobGroup jobGroup) {
-        if (jobGroup != null) this.jobGroup = jobGroup;
-
+        this.jobGroup = jobGroup;
     }
+
+    public void updateOnboardingCharacter(OnboardingCharacter onboardingCharacter) {
+        this.onboardingCharacter = onboardingCharacter;
+    }
+
 
     public void updateOnboardingInfo(Education education,
                                      int workExperience,

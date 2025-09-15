@@ -10,4 +10,5 @@ import java.util.List;
 public interface UserCompanyTypeRepository extends JpaRepository<UserCompanyType, Long> {
     List<UserCompanyType> findByUserId(Long userId);
 
+    void deleteByUserId(Long userId);
 }

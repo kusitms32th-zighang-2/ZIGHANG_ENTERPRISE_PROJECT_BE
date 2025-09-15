@@ -32,4 +32,12 @@ public class UserController {
     public ApiResponse<UserDto.MyPageAllResponse> getUsersResultInfo() {
         return ApiResponse.onSuccess(userService.getMypageAll());
     }
+
+//    @Operation(summary = "마이페이지 테스트 다시하기 API", description = "마이페이지 테스트 다시하기 API입니다.")
+//    @DeleteMapping("/my-page/re-onboarding")
+//    public ApiResponse<?> reOnboarding() {
+//        return ApiResponse.onSuccess(userService.reOnboarding());
+//    }
+
+
 }

@@ -188,4 +188,17 @@ public class UserService {
                 .searchResponses(searchResponses)
                 .build();
     }
+
+//    public UserDto reOnboarding() {
+//        Long userId = jwtProvider.getCurrentUserId();
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
+//
+//        userJobPositionRepository.deleteAll(user.getUserJobPositions());
+//        userCompanyTypeRepository.deleteAll(user.getUserCompanyTypes());
+//        jobRecommendRepository.deleteAll(user.getJobRecommendList());
+//
+//        // 2) 캐릭터 참조 해제
+////        user.setOnboardingCharacter(null);
+//    }
 }

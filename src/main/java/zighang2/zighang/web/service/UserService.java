@@ -185,6 +185,7 @@ public class UserService {
         return UserDto.MyPageAllResponse.builder()
                 .id(user.getId())
                 .characterId(user.getOnboardingCharacter().getId())
+                .characterName(user.getOnboardingCharacter().getCharacterName().getDisplayName())
                 .searchResponses(searchResponses)
                 .build();
     }

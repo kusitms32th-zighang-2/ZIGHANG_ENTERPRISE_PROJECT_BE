@@ -26,7 +26,7 @@ public class KakaoUtil {
 
     private final ObjectMapper objectMapper;
 
-    public KakaoDto.OAuthToken requestToken(String accessCode) {
+    public KakaoDto.OAuthToken requestToken(String accessCode,String redirectUri) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
@@ -34,7 +34,7 @@ public class KakaoUtil {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", client);
-        params.add("redirect_uri", redirect);
+        params.add("redirect_uri", redirectUri);
         params.add("code", accessCode);
         params.add("client_secret", clientSecret);
 

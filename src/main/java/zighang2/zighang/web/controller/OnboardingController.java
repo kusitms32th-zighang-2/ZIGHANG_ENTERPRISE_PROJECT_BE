@@ -23,7 +23,7 @@ public class OnboardingController {
 
     @Operation(summary = "온보딩한 유저의 테스트 캐릭터 발급 API", description = "온보딩한 유저의 테스트 결과를 제공하는 API입니다.")
     @PostMapping("/afterOnboading/character")
-    public ApiResponse<OnboardingDto.OnboardingSignupResponse> getCharacterAfterOnboarding(@RequestBody OnboardingDto.OnboardingRequest request) {
+    public ApiResponse<UserDto.MyPageAllResponse> getCharacterAfterOnboarding(@RequestBody OnboardingDto.OnboardingRequest request) {
         return ApiResponse.onSuccess(onboardingService.getCharacterAfterOnboarding(request));
     }
 

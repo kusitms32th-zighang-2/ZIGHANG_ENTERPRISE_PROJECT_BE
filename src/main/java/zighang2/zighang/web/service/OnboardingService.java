@@ -141,11 +141,22 @@ public class OnboardingService {
         saveUserJobPositions(user,request.getJobPositionEnum());
         saveUserCompanyTypes(user,request.getCompanyList());
 
-        return processRecommendationsAndBuildResponse(user,request.getWelfareList());
+        List<Map.Entry<JobRecommend, Integer>> top6 = runRecommendationsAndSave(user, request.getWelfareList());
+
+        // DTO 생성
+        List<SearchDto.SearchResponse> recommendationDtoList = top6.stream()
+                .map(entry -> SearchDto.SearchResponse.of(entry.getKey(), entry.getValue()))
+                .toList();
+
+        return OnboardingDto.OnboardingSignupResponse.builder()
+                .characterId(character.getId())
+                .characterName(character.getCharacterName().getDisplayName())
+                .jobRecommends(recommendationDtoList)
+                .build();
     }
 
     @Transactional
-    public OnboardingDto.OnboardingSignupResponse getCharacterAfterOnboarding(OnboardingDto.OnboardingRequest request){
+    public UserDto.MyPageAllResponse getCharacterAfterOnboarding(OnboardingDto.OnboardingRequest request){
 
         CalculationResult calculationResult = calculateCompanyAndWelfare(request);
 
@@ -173,7 +184,20 @@ public class OnboardingService {
 
         saveUserCompanyTypes(user,companyTypeEnumList);
 
-        return processRecommendationsAndBuildResponse(user,welfareList);
+        // 추천 처리 + DTO 응답 생성 공통 로직 사용
+        List<Map.Entry<JobRecommend, Integer>> top6 = runRecommendationsAndSave(user, welfareList);
+
+        // DTO 변환
+        List<SearchDto.SearchResponse_2> searchResponses = top6.stream()
+                .map(entry -> SearchDto.SearchResponse_2.of(entry.getKey()))
+                .toList();
+
+        return UserDto.MyPageAllResponse.builder()
+                .id(user.getId())
+                .characterId(character.getId())
+                .characterName(character.getCharacterName().getDisplayName())
+                .searchResponses(searchResponses)
+                .build();
     }
 
 
@@ -246,16 +270,17 @@ public class OnboardingService {
         }
     }
 
-    private OnboardingDto.OnboardingSignupResponse processRecommendationsAndBuildResponse(User user, List<String> welfareList) {
+    private List<Map.Entry<JobRecommend, Integer>> runRecommendationsAndSave(User user, List<String> welfareList) {
         List<JobRecommend> quickRecommendations = recommendService.getQuickRecommendations(user, welfareList);
+        List<Map.Entry<JobRecommend, Integer>> commuteFiltered = recommendService.calculateJobCommuteTimes(quickRecommendations, user);
 
-        List<Map.Entry<JobRecommend,Integer>> commuteFiltered = recommendService.calculateJobCommuteTimes(quickRecommendations, user);
-
-        List<Map.Entry<JobRecommend,Integer>> top6 = commuteFiltered.stream()
+        // 거리 기준 오름차순 정렬 후 상위 6개
+        List<Map.Entry<JobRecommend, Integer>> top6 = commuteFiltered.stream()
                 .sorted(Comparator.comparingInt(Map.Entry::getValue))
                 .limit(6)
                 .toList();
 
+        // commuteMinutes 설정 + 저장
         List<JobRecommend> top6Jobs = top6.stream()
                 .map(entry -> {
                     JobRecommend job = entry.getKey();
@@ -267,14 +292,6 @@ public class OnboardingService {
         jobRecommendRepository.saveAll(top6Jobs);
         jobRecommendRepository.flush();
 
-        List<SearchDto.SearchResponse> recommendationDtoList = top6.stream()
-                .map(entry -> SearchDto.SearchResponse.of(entry.getKey(), entry.getValue()))
-                .toList();
-
-        return OnboardingDto.OnboardingSignupResponse.builder()
-                .characterId(user.getOnboardingCharacter().getId())
-                .characterName(user.getOnboardingCharacter().getCharacterName().getDisplayName())
-                .jobRecommends(recommendationDtoList)
-                .build();
+        return top6;
     }
 }

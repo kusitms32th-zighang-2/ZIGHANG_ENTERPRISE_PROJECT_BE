@@ -45,7 +45,7 @@ public class OnboardingService {
         User user = userRepository.findById(jwtProvider.getCurrentUserId())
                 .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
 
-        JobGroup jobGroup = jobGroupRepository.findByJobGroupName(request.getJobGroupEnum())
+        JobGroup jobGroup = jobGroupRepository.findByJobGroupName(request.getJobGroups())
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBGROUP_NOT_FOUND));
 
         user.updateOnboardingInfo(

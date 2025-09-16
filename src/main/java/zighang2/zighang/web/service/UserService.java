@@ -47,7 +47,7 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
-        JobGroup jobGroup = jobGroupRepository.findByJobGroupName(mypageRequestDto.getJobGroupEnum())
+        JobGroup jobGroup = jobGroupRepository.findByJobGroupName(mypageRequestDto.getJobGroups())
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBGROUP_NOT_FOUND));
 
         user.updateUsersJobGroup(jobGroup);

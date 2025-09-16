@@ -51,7 +51,7 @@ public class UserDto {
     @AllArgsConstructor
     @NoArgsConstructor(access = PROTECTED)
     public static class MypageRequestDto {
-        private JobGroupEnum jobGroupEnum;
+        private JobGroupEnum jobGroups;
         private List<JobPositionEnum> jobPositions;
         private Education education;
         private Integer workExperience;

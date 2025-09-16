@@ -90,6 +90,16 @@ public class OnboardingService {
                 .distinct()
                 .toList();
 
+        Long userId = jwtProvider.getCurrentUserId();
+
+        if (userId != null){
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
+
+            user.updateOnboardingCharacter(character);
+            userRepository.save(user);
+        }
+
         // 5. Response DTO 반환
         return OnboardingDto.OnboardingResponse.builder()
                 .companyTypeEnumList(companyTypeEnumList)

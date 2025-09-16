@@ -41,19 +41,19 @@ public class UserService {
     private final RedisService redisService;
 
     @Transactional
-    public UserDto.MypageModifyResponse modifyUserInfo(UserDto.MypageModifyRequest mypageModifyRequest) {
+    public UserDto.MypageResponseDto modifyUserInfo(UserDto.MypageRequestDto mypageRequestDto) {
         Long userId = jwtProvider.getCurrentUserId();
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
-        JobGroup jobGroup = jobGroupRepository.findByJobGroupName(mypageModifyRequest.getJobGroups())
+        JobGroup jobGroup = jobGroupRepository.findByJobGroupName(mypageRequestDto.getJobGroupEnum())
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBGROUP_NOT_FOUND));
 
         user.updateUsersJobGroup(jobGroup);
 
         List<UserJobPosition> existing = userJobPositionRepository.findByUser_Id(user.getId());
-        Set<JobPositionEnum> newPositions = new HashSet<>(mypageModifyRequest.getJobPositions());
+        Set<JobPositionEnum> newPositions = new HashSet<>(mypageRequestDto.getJobPositions());
 
         for (UserJobPosition ujp : existing) {
             if (!newPositions.contains(ujp.getJobPosition().getJobPositionName())) {
@@ -81,12 +81,12 @@ public class UserService {
         }
 
         user.updateUsersInfo(
-                mypageModifyRequest.getEducation(),
-                mypageModifyRequest.getWorkExperience(),
-                mypageModifyRequest.getAddress(),
-                mypageModifyRequest.getTransport(),
-                mypageModifyRequest.getMaxCommuteMinutes(),
-                mypageModifyRequest.getReceivingEmail()
+                mypageRequestDto.getEducation(),
+                mypageRequestDto.getWorkExperience(),
+                mypageRequestDto.getAddress(),
+                mypageRequestDto.getTransport(),
+                mypageRequestDto.getMaxCommuteMinutes(),
+                mypageRequestDto.getReceivingEmail()
         );
 
         // jobRecommend 관련 데이터 모두 삭제
@@ -101,7 +101,7 @@ public class UserService {
         // 비동기 처리 (공고 재추천 후 -> 저장)
         recommendService.getFullRecommendationsAsync(user, welfareList, companyRatio);
 
-        return UserDto.MypageModifyResponse.of(user);
+        return UserDto.MypageResponseDto.of(user);
     }
 
     @Transactional
@@ -115,7 +115,7 @@ public class UserService {
                 .map(ujp -> ujp.getJobPosition().getJobPositionName().getDisplay())
                 .toList();
 
-        UserDto.MypageModifyResponse modifyResponse = UserDto.MypageModifyResponse.builder()
+        UserDto.MypageResponseDto modifyResponse = UserDto.MypageResponseDto.builder()
                 .jobGroups(user.getJobGroup() != null ? user.getJobGroup().getJobGroupName().getDisplay() : null)
                 .jobPositions(jobPositions)
                 .education(user.getEducation()  != null ? user.getEducation().getDisplayName() : null)
@@ -132,7 +132,7 @@ public class UserService {
                 .email(user.getEmail())
                 .characterId(user.getOnboardingCharacter()  != null ? user.getOnboardingCharacter().getId(): null)
                 .characterName(user.getOnboardingCharacter()  != null ? user.getOnboardingCharacter().getCharacterName().getDisplayName() : null)
-                .MypageModifyResponse(modifyResponse)
+                .MypageResponseDto(modifyResponse)
                 .build();
 
     }

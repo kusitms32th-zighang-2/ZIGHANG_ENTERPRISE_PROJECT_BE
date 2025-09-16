@@ -17,6 +17,7 @@ import zighang2.zighang.web.domain.user.UserCompanyType;
 import zighang2.zighang.web.domain.user.UserJobPosition;
 import zighang2.zighang.web.dto.OnboardingDto;
 import zighang2.zighang.web.dto.SearchDto;
+import zighang2.zighang.web.dto.UserDto;
 import zighang2.zighang.web.repository.*;
 
 import java.util.*;
@@ -38,6 +39,41 @@ public class OnboardingService {
     private final RecommendService recommendService;
     private final RedisService redisService;
     private final JobRecommendRepository jobRecommendRepository;
+
+    @Transactional
+    public UserDto.MypageResponseDto onboardingSignup(UserDto.MypageRequestDto request){
+        User user = userRepository.findById(jwtProvider.getCurrentUserId())
+                .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+
+        JobGroup jobGroup = jobGroupRepository.findByJobGroupName(request.getJobGroupEnum())
+                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBGROUP_NOT_FOUND));
+
+        user.updateOnboardingInfo(
+                request.getEducation(),
+                request.getWorkExperience(),
+                request.getAddress(),
+                request.getReceivingEmail(),
+                request.getTransport(),
+                request.getMaxCommuteMinutes(),
+                jobGroup
+        );
+
+        if(request.getJobPositions() != null && !request.getJobPositions().isEmpty()) {
+            for(JobPositionEnum jobPositionEnum : request.getJobPositions()) {
+                JobPosition jobPosition = jobPositionRepository.findByJobPositionName(jobPositionEnum)
+                        .orElseThrow(() -> new NotFoundHandler(ErrorStatus .JOBPOSITION_NOT_FOUND));
+
+                UserJobPosition userJobPosition = UserJobPosition.builder()
+                        .jobPosition(jobPosition)
+                        .user(user)
+                        .build();
+
+                userJobPositionRepository.save(userJobPosition);
+            }
+        }
+
+        return UserDto.MypageResponseDto.of(user);
+    }
 
     @Transactional
     public OnboardingDto.OnboardingResponse getOnboardingCharacter(OnboardingDto.OnboardingRequest request) {
@@ -134,13 +170,13 @@ public class OnboardingService {
     }
 
     @Transactional
-    public OnboardingDto.OnboardingSignupResponse onboardingSignup(OnboardingDto.OnboardingSignupRequest request) {
+    public OnboardingDto.OnboardingSignupResponse onboardingSignupAfterTest(OnboardingDto.OnboardingSignupRequest request) {
         Long userId = jwtProvider.getCurrentUserId();
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
-        // 유저 온보딩 정보 Redis 저장.
+        // 유저 테스트 정보 Redis 저장.
         redisService.saveCompanyRatio(userId, request.getCompanyRatio());
         redisService.saveWelfareList(userId, request.getWelfareList());
 
@@ -154,11 +190,13 @@ public class OnboardingService {
                 request.getEducation(),
                 request.getWorkExperience(),
                 request.getAddress(),
+                request.getReceivingEmail(),
                 request.getTransport(),
                 request.getMaxCommuteMinutes(),
-                character,
                 jobGroup
         );
+
+        user.updateOnboardingCharacter(character);
 
         userRepository.save(user);
 

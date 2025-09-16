@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import zighang2.zighang.global.payload.ApiResponse;
 import zighang2.zighang.web.dto.OnboardingDto;
-import zighang2.zighang.web.dto.SearchDto;
 import zighang2.zighang.web.dto.UserDto;
 import zighang2.zighang.web.service.UserService;
 
@@ -18,7 +17,7 @@ public class UserController {
 
     @Operation(summary = "마이페이지 수정 API", description = "마이페이지 수정 API입니다.")
     @PatchMapping("/my-page")
-    public ApiResponse<UserDto.MypageModifyResponse> modifyUsersInfo(@Valid @RequestBody UserDto.MypageModifyRequest mypageDto) {
+    public ApiResponse<UserDto.MypageResponseDto> modifyUsersInfo(@Valid @RequestBody UserDto.MypageRequestDto mypageDto) {
         return ApiResponse.onSuccess(userService.modifyUserInfo(mypageDto));
     }
 

@@ -8,14 +8,12 @@ import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
 import zighang2.zighang.global.payload.exception.handler.NotFoundHandler;
 import zighang2.zighang.global.service.RedisService;
-import zighang2.zighang.web.domain.CompanyType;
 import zighang2.zighang.web.domain.JobGroup;
 import zighang2.zighang.web.domain.JobPosition;
 import zighang2.zighang.web.domain.JobRecommend;
 import zighang2.zighang.web.domain.enums.CompanyTypeEnum;
 import zighang2.zighang.web.domain.enums.JobPositionEnum;
 import zighang2.zighang.web.domain.user.User;
-import zighang2.zighang.web.domain.user.UserCompanyType;
 import zighang2.zighang.web.domain.user.UserJobPosition;
 import zighang2.zighang.web.dto.OnboardingDto;
 import zighang2.zighang.web.dto.SearchDto;
@@ -37,7 +35,6 @@ public class UserService {
     private final JobGroupRepository jobGroupRepository;
     private final JobPositionRepository jobPositionRepository;
     private final UserJobPositionRepository userJobPositionRepository;
-    private final CompanyTypeRepository companyTypeRepository;
     private final UserCompanyTypeRepository userCompanyTypeRepository;
     private final RecommendService recommendService;
     private final JobRecommendRepository jobRecommendRepository;
@@ -83,32 +80,6 @@ public class UserService {
             }
         }
 
-        List<UserCompanyType> companyTypeExisting = userCompanyTypeRepository.findByUserId(user.getId());
-        Set<CompanyTypeEnum> newCompanyTypes = new HashSet<>(mypageModifyRequest.getCompanyTypes());
-
-        for (UserCompanyType uct : companyTypeExisting) {
-            if (!newCompanyTypes.contains(uct.getCompanyType().getCompanyTypeName())) {
-                userCompanyTypeRepository.delete(uct);
-                userCompanyTypeRepository.flush();
-            }
-        }
-
-        for (CompanyTypeEnum companyTypeEnum : newCompanyTypes) {
-            boolean alreadyExists = companyTypeExisting.stream()
-                    .anyMatch(uct -> uct.getCompanyType().getCompanyTypeName().equals(companyTypeEnum));
-
-            if (!alreadyExists) {
-                CompanyType companyType = companyTypeRepository.findByCompanyTypeName(companyTypeEnum)
-                        .orElseThrow(()->new NotFoundHandler(ErrorStatus.COMPANY_TYPE_NOT_FOUND));
-
-                UserCompanyType uct = UserCompanyType.builder()
-                        .user(user)
-                        .companyType(companyType)
-                        .build();
-                userCompanyTypeRepository.save(uct);
-            }
-        }
-
         user.updateUsersInfo(
                 mypageModifyRequest.getEducation(),
                 mypageModifyRequest.getWorkExperience(),
@@ -144,16 +115,9 @@ public class UserService {
                 .map(ujp -> ujp.getJobPosition().getJobPositionName().getDisplay())
                 .toList();
 
-        List<String> companyTypes = user.getUserCompanyTypes() == null ? List.of()
-                : user.getUserCompanyTypes().stream()
-                .map(uct-> uct.getCompanyType().getCompanyTypeName().getDisplay())
-                .toList();
-
-
         UserDto.MypageModifyResponse modifyResponse = UserDto.MypageModifyResponse.builder()
                 .jobGroups(user.getJobGroup() != null ? user.getJobGroup().getJobGroupName().getDisplay() : null)
                 .jobPositions(jobPositions)
-                .companyTypes(companyTypes)
                 .education(user.getEducation()  != null ? user.getEducation().getDisplayName() : null)
                 .workExperience(user.getWorkExperience())
                 .address(user.getAddress())
@@ -200,12 +164,10 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
-        userJobPositionRepository.deleteByUserId(userId);
         userCompanyTypeRepository.deleteByUserId(userId);
         jobRecommendRepository.deleteByUserId(userId);
 
         user.updateOnboardingCharacter(null);
-        user.updateUsersJobGroup(null);
 
         return OnboardingDto.ReOnboardingResponse.builder()
                 .userId(user.getId())

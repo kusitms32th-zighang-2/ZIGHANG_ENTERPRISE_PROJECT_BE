@@ -53,7 +53,6 @@ public class UserDto {
     public static class MypageModifyRequest {
         private JobGroupEnum jobGroups;
         private List<JobPositionEnum> jobPositions;
-        private List<CompanyTypeEnum> companyTypes;
         private Education education;
         private Integer workExperience;
         private String address;
@@ -70,7 +69,6 @@ public class UserDto {
     public static class MypageModifyResponse {
         private String jobGroups;
         private List<String> jobPositions;
-        private List<String> companyTypes;
         private String education;
         private Integer workExperience;
         private String address;
@@ -80,11 +78,6 @@ public class UserDto {
 
         public static MypageModifyResponse of(User user) {
             return MypageModifyResponse.builder()
-                    .companyTypes(
-                            user.getUserCompanyTypes().stream()
-                                    .map(uct -> uct.getCompanyType().getCompanyTypeName().getDisplay())
-                                    .toList()
-                    )
                     .jobGroups(user.getJobGroup().getJobGroupName().getDisplay())
                     .jobPositions(
                             user.getUserJobPositions().stream()

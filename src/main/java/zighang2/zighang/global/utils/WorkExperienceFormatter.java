@@ -13,7 +13,7 @@ public class WorkExperienceFormatter {
             return null;
         }
 
-        List<Integer> values = Arrays.stream(workExpRaw.split(","))
+        List<Integer> values = Arrays.stream(workExpRaw.split("[,/]"))
                 .map(String::trim)
                 .map(Integer::parseInt)
                 .toList();

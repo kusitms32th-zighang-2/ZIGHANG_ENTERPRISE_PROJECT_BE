@@ -51,7 +51,6 @@ public class OnboardingDto {
         private Integer maxCommuteMinutes;
         private Transport transport;
         private String address;
-        private String receivingEmail;
 
         // ==== 온보딩 정보 ====
         private Long characterId;

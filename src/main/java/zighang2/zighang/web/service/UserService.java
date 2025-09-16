@@ -85,8 +85,7 @@ public class UserService {
                 mypageRequestDto.getWorkExperience(),
                 mypageRequestDto.getAddress(),
                 mypageRequestDto.getTransport(),
-                mypageRequestDto.getMaxCommuteMinutes(),
-                mypageRequestDto.getReceivingEmail()
+                mypageRequestDto.getMaxCommuteMinutes()
         );
 
         // jobRecommend 관련 데이터 모두 삭제
@@ -123,7 +122,6 @@ public class UserService {
                 .address(user.getAddress())
                 .transport(String.valueOf(user.getTransport()))
                 .maxCommuteMinutes(user.getMaxCommuteMinutes())
-                .receivingEmail(user.getReceivingEmail())
                 .build();
 
         return UserDto.MyPageDto.builder()

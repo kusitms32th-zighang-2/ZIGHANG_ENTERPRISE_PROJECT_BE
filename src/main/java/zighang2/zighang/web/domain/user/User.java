@@ -50,9 +50,6 @@ public class User extends BaseEntity {
 
     private Integer workExperience;
 
-    @Column(length = 50)
-    private String receivingEmail;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "character_id")
     private OnboardingCharacter onboardingCharacter;
@@ -75,14 +72,12 @@ public class User extends BaseEntity {
                                 Integer workExperience,
                                 String address,
                                 Transport transport,
-                                Integer maxCommuteMinutes,
-                                String receivingEmail) {
+                                Integer maxCommuteMinutes) {
         if (education != null) this.education = education;
         if (workExperience != null) this.workExperience = workExperience;
         if (address != null) this.address = address.trim();
         if (transport != null) this.transport = transport;
         if (maxCommuteMinutes != null) this.maxCommuteMinutes = maxCommuteMinutes;
-        if (receivingEmail != null) this.receivingEmail = receivingEmail.trim();
     }
 
     public void updateUsersJobGroup(JobGroup jobGroup) {
@@ -97,7 +92,6 @@ public class User extends BaseEntity {
     public void updateOnboardingInfo(Education education,
                                      int workExperience,
                                      String address,
-                                     String receivingEmail,
                                      Transport transport,
                                      int maxCommuteMinutes,
                                      JobGroup jobGroup) {
@@ -107,7 +101,6 @@ public class User extends BaseEntity {
         this.transport = transport;
         this.maxCommuteMinutes = maxCommuteMinutes;
         this.jobGroup = jobGroup;
-        this.receivingEmail = receivingEmail;
         this.userRole = UserRole.GENERAL; // 신규 가입 시 기본 롤
     }
 }

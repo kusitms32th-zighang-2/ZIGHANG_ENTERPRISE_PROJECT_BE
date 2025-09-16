@@ -52,7 +52,6 @@ public class OnboardingService {
                 request.getEducation(),
                 request.getWorkExperience(),
                 request.getAddress(),
-                request.getReceivingEmail(),
                 request.getTransport(),
                 request.getMaxCommuteMinutes(),
                 jobGroup
@@ -190,7 +189,6 @@ public class OnboardingService {
                 request.getEducation(),
                 request.getWorkExperience(),
                 request.getAddress(),
-                request.getReceivingEmail(),
                 request.getTransport(),
                 request.getMaxCommuteMinutes(),
                 jobGroup

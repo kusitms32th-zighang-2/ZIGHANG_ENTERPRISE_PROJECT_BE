@@ -58,7 +58,6 @@ public class UserDto {
         private String address;
         private Transport transport;
         private Integer maxCommuteMinutes;
-        private String receivingEmail;
     }
 
     @Getter
@@ -73,7 +72,6 @@ public class UserDto {
         private String address;
         private String transport;
         private Integer maxCommuteMinutes;
-        private String receivingEmail;
 
         public static MypageResponseDto of(User user) {
             return MypageResponseDto.builder()
@@ -88,7 +86,6 @@ public class UserDto {
                     .address(user.getAddress())
                     .transport(String.valueOf(user.getTransport()))
                     .maxCommuteMinutes(user.getMaxCommuteMinutes())
-                    .receivingEmail(user.getReceivingEmail())
                     .build();
 
         }

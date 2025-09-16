@@ -200,12 +200,10 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
-        userJobPositionRepository.deleteByUserId(userId);
         userCompanyTypeRepository.deleteByUserId(userId);
         jobRecommendRepository.deleteByUserId(userId);
 
         user.updateOnboardingCharacter(null);
-        user.updateUsersJobGroup(null);
 
         return OnboardingDto.ReOnboardingResponse.builder()
                 .userId(user.getId())

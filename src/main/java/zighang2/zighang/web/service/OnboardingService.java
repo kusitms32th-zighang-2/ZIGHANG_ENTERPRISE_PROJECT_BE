@@ -98,6 +98,7 @@ public class OnboardingService {
                 userRepository.findById(userId).ifPresent(user -> {
                     user.updateOnboardingCharacter(character);
                     userRepository.save(user);
+                    againTest(user,companyRatio,companyTypeEnumList,welfareList);
                 });
             }
         } catch (NotFoundHandler e) {
@@ -236,6 +237,59 @@ public class OnboardingService {
                 .characterName(character.getCharacterName().getDisplayName())
                 .jobRecommends(recommendationDtoList)
                 .build();
+
+    }
+
+    //유저, 복지, 기업 규모
+    public void againTest(User user, Map<CompanyTypeEnum, Double> companyRatio, List<CompanyTypeEnum> companyTypes,List<String> welfareList){
+
+        redisService.saveCompanyRatio(user.getId(), companyRatio);
+        redisService.saveWelfareList(user.getId(),welfareList);
+
+        if (companyTypes != null && !companyTypes.isEmpty()) {
+            for (CompanyTypeEnum companyTypeEnum : companyTypes) {
+
+                CompanyType companyType = companyTypeRepository.findByCompanyTypeName(companyTypeEnum)
+                        .orElseThrow(() -> new NotFoundHandler(ErrorStatus.COMPANY_TYPE_NOT_FOUND));
+
+                UserCompanyType userCompanyType = UserCompanyType.builder()
+                        .user(user)
+                        .companyType(companyType)
+                        .build();
+
+                userCompanyTypeRepository.save(userCompanyType);
+            }
+        }
+
+//        // 빠른 추천 (동기 처리 메서드) -> 응답에 포함
+//        List<JobRecommend> quickRecommendations = recommendService.getQuickRecommendations(user, welfareList);
+//
+//        // ================= 거리 필터링 =========================
+//        List<Map.Entry<JobRecommend,Integer>> commuteFilteredEntries = recommendService.calculateJobCommuteTimes(quickRecommendations,user);
+//
+//        // 필터링된 추천 목록 6개 추출
+//        List<Map.Entry<JobRecommend, Integer>> top6Entries = commuteFilteredEntries.stream()
+//                .sorted(Comparator.comparingInt(Map.Entry::getValue))
+//                .limit(6)
+//                .toList();
+//
+//        // DB 저장 (온보딩 시점 추천 6개만 저장)
+//        List<JobRecommend> top6Recommends = top6Entries.stream()
+//                .map(entry -> {
+//                    JobRecommend job = entry.getKey();
+//                    job.setCommuteMinutes(entry.getValue());
+//                    return job;
+//                })
+//                .toList();
+//
+//        jobRecommendRepository.saveAll(top6Recommends);
+//
+//        // 필터링을 위한 Id값 확보
+//        jobRecommendRepository.flush();
+
+        // 전체 추천 (비동기 처리 메서드)
+        recommendService.getFullRecommendationsAsync(user, welfareList, companyRatio);
+
 
     }
 }

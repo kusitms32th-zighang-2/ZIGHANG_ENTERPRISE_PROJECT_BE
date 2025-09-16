@@ -1,5 +1,6 @@
 package zighang2.zighang.web.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,11 +16,17 @@ public class OnboardingDto {
     @Getter
     @AllArgsConstructor
     public static class OnboardingRequest {
+        @Schema(description = "기업 유형1", example = "MAJOR")
         private CompanyTypeEnum q1;
+        @Schema(description = "기업 유형2", example = "MID_SIZE")
         private CompanyTypeEnum q2;
+        @Schema(description = "기업 유형3", example = "STARTUP")
         private CompanyTypeEnum q3;
+        @Schema(description = "복지1", example = "휴가")
         private String q4;
+        @Schema(description = "복지2", example = "커리어")
         private String q5;
+        @Schema(description = "복지3", example = "식대")
         private String q6;
     }
 

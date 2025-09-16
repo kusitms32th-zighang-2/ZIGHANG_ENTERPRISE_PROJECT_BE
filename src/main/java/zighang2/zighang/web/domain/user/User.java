@@ -97,17 +97,17 @@ public class User extends BaseEntity {
     public void updateOnboardingInfo(Education education,
                                      int workExperience,
                                      String address,
+                                     String receivingEmail,
                                      Transport transport,
                                      int maxCommuteMinutes,
-                                     OnboardingCharacter character,
                                      JobGroup jobGroup) {
         this.education = education;
         this.workExperience = workExperience;
         this.address = address;
         this.transport = transport;
         this.maxCommuteMinutes = maxCommuteMinutes;
-        this.onboardingCharacter = character;
         this.jobGroup = jobGroup;
+        this.receivingEmail = receivingEmail;
         this.userRole = UserRole.GENERAL; // 신규 가입 시 기본 롤
     }
 }

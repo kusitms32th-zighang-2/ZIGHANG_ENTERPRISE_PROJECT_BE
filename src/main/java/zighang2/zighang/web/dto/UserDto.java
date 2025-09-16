@@ -30,7 +30,7 @@ public class UserDto {
         private String name;
         private Long characterId;
         private String characterName;
-        private MypageModifyResponse MypageModifyResponse;
+        private MypageResponseDto MypageResponseDto;
     }
 
     @Getter
@@ -50,8 +50,8 @@ public class UserDto {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor(access = PROTECTED)
-    public static class MypageModifyRequest {
-        private JobGroupEnum jobGroups;
+    public static class MypageRequestDto {
+        private JobGroupEnum jobGroupEnum;
         private List<JobPositionEnum> jobPositions;
         private Education education;
         private Integer workExperience;
@@ -59,14 +59,13 @@ public class UserDto {
         private Transport transport;
         private Integer maxCommuteMinutes;
         private String receivingEmail;
-
     }
 
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor(access = PROTECTED)
-    public static class MypageModifyResponse {
+    public static class MypageResponseDto {
         private String jobGroups;
         private List<String> jobPositions;
         private String education;
@@ -76,8 +75,8 @@ public class UserDto {
         private Integer maxCommuteMinutes;
         private String receivingEmail;
 
-        public static MypageModifyResponse of(User user) {
-            return MypageModifyResponse.builder()
+        public static MypageResponseDto of(User user) {
+            return MypageResponseDto.builder()
                     .jobGroups(user.getJobGroup().getJobGroupName().getDisplay())
                     .jobPositions(
                             user.getUserJobPositions().stream()

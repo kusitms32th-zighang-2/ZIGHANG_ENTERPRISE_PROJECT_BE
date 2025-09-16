@@ -83,32 +83,6 @@ public class UserService {
             }
         }
 
-        List<UserCompanyType> companyTypeExisting = userCompanyTypeRepository.findByUserId(user.getId());
-        Set<CompanyTypeEnum> newCompanyTypes = new HashSet<>(mypageModifyRequest.getCompanyTypes());
-
-        for (UserCompanyType uct : companyTypeExisting) {
-            if (!newCompanyTypes.contains(uct.getCompanyType().getCompanyTypeName())) {
-                userCompanyTypeRepository.delete(uct);
-                userCompanyTypeRepository.flush();
-            }
-        }
-
-        for (CompanyTypeEnum companyTypeEnum : newCompanyTypes) {
-            boolean alreadyExists = companyTypeExisting.stream()
-                    .anyMatch(uct -> uct.getCompanyType().getCompanyTypeName().equals(companyTypeEnum));
-
-            if (!alreadyExists) {
-                CompanyType companyType = companyTypeRepository.findByCompanyTypeName(companyTypeEnum)
-                        .orElseThrow(()->new NotFoundHandler(ErrorStatus.COMPANY_TYPE_NOT_FOUND));
-
-                UserCompanyType uct = UserCompanyType.builder()
-                        .user(user)
-                        .companyType(companyType)
-                        .build();
-                userCompanyTypeRepository.save(uct);
-            }
-        }
-
         user.updateUsersInfo(
                 mypageModifyRequest.getEducation(),
                 mypageModifyRequest.getWorkExperience(),
@@ -144,16 +118,9 @@ public class UserService {
                 .map(ujp -> ujp.getJobPosition().getJobPositionName().getDisplay())
                 .toList();
 
-        List<String> companyTypes = user.getUserCompanyTypes() == null ? List.of()
-                : user.getUserCompanyTypes().stream()
-                .map(uct-> uct.getCompanyType().getCompanyTypeName().getDisplay())
-                .toList();
-
-
         UserDto.MypageModifyResponse modifyResponse = UserDto.MypageModifyResponse.builder()
                 .jobGroups(user.getJobGroup() != null ? user.getJobGroup().getJobGroupName().getDisplay() : null)
                 .jobPositions(jobPositions)
-                .companyTypes(companyTypes)
                 .education(user.getEducation()  != null ? user.getEducation().getDisplayName() : null)
                 .workExperience(user.getWorkExperience())
                 .address(user.getAddress())

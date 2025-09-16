@@ -139,20 +139,22 @@ public class UserService {
         User user = userRepository.findById(userId).
                 orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
-        List<String> jobPositions = user.getUserJobPositions().stream()
+        List<String> jobPositions = user.getUserJobPositions()== null ? List.of()
+                : user.getUserJobPositions().stream()
                 .map(ujp -> ujp.getJobPosition().getJobPositionName().getDisplay())
                 .toList();
 
-        List<String> companyTypes = user.getUserCompanyTypes().stream()
+        List<String> companyTypes = user.getUserCompanyTypes() == null ? List.of()
+                : user.getUserCompanyTypes().stream()
                 .map(uct-> uct.getCompanyType().getCompanyTypeName().getDisplay())
                 .toList();
 
 
         UserDto.MypageModifyResponse modifyResponse = UserDto.MypageModifyResponse.builder()
-                .jobGroups(user.getJobGroup().getJobGroupName().getDisplay())
+                .jobGroups(user.getJobGroup() != null ? user.getJobGroup().getJobGroupName().getDisplay() : null)
                 .jobPositions(jobPositions)
                 .companyTypes(companyTypes)
-                .education(user.getEducation().getDisplayName())
+                .education(user.getEducation()  != null ? user.getEducation().getDisplayName() : null)
                 .workExperience(user.getWorkExperience())
                 .address(user.getAddress())
                 .transport(String.valueOf(user.getTransport()))
@@ -164,8 +166,8 @@ public class UserService {
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
-                .characterId(user.getOnboardingCharacter().getId())
-                .characterName(user.getOnboardingCharacter().getCharacterName().getDisplayName())
+                .characterId(user.getOnboardingCharacter()  != null ? user.getOnboardingCharacter().getId(): null)
+                .characterName(user.getOnboardingCharacter()  != null ? user.getOnboardingCharacter().getCharacterName().getDisplayName() : null)
                 .MypageModifyResponse(modifyResponse)
                 .build();
 

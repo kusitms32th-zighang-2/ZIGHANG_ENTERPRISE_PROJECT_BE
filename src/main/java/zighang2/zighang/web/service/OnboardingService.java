@@ -2,6 +2,7 @@ package zighang2.zighang.web.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import zighang2.zighang.global.auth.jwt.JwtProvider;
 import zighang2.zighang.global.payload.code.status.ErrorStatus;
@@ -22,6 +23,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class OnboardingService {
 
@@ -90,15 +92,18 @@ public class OnboardingService {
                 .distinct()
                 .toList();
 
-        Long userId = jwtProvider.getCurrentUserId();
-
-        if (userId != null){
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
-
-            user.updateOnboardingCharacter(character);
-            userRepository.save(user);
+        try {
+            Long userId = jwtProvider.getCurrentUserId();
+            if (userId != null) {
+                userRepository.findById(userId).ifPresent(user -> {
+                    user.updateOnboardingCharacter(character);
+                    userRepository.save(user);
+                });
+            }
+        } catch (NotFoundHandler e) {
+            log.info("회원가입을 하지않아, 캐릭터 저장이 안됩니다.");
         }
+
 
         // 5. Response DTO 반환
         return OnboardingDto.OnboardingResponse.builder()

@@ -112,6 +112,8 @@ public class OnboardingService {
     public OnboardingDto.OnboardingSignupResponse onboardingSignupAfterTest(OnboardingDto.OnboardingSignupRequest request) {
         Long userId = jwtProvider.getCurrentUserId();
 
+        System.out.println(request.getJobGroups());
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
 
@@ -122,7 +124,7 @@ public class OnboardingService {
         OnboardingCharacter character = onboardingRepository.findById(request.getCharacterId())
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.CHARACTER_NOT_FOUND));
 
-        JobGroup jobGroup = jobGroupRepository.findByJobGroupName(request.getJobGroupEnum())
+        JobGroup jobGroup = jobGroupRepository.findByJobGroupName(request.getJobGroups())
                 .orElseThrow(() -> new NotFoundHandler(ErrorStatus.JOBGROUP_NOT_FOUND));
 
         user.updateOnboardingInfo(
@@ -138,7 +140,7 @@ public class OnboardingService {
 
         userRepository.save(user);
 
-        saveUserJobPositions(user,request.getJobPositionEnum());
+        saveUserJobPositions(user,request.getJobPositions());
         saveUserCompanyTypes(user,request.getCompanyList());
 
         List<Map.Entry<JobRecommend, Integer>> top6 = runRecommendationsAndSave(user, request.getWelfareList());

@@ -39,5 +39,13 @@ public class UserController {
         return ApiResponse.onSuccess(userService.reOnboarding());
     }
 
+    @Operation(summary = "유저 삭제 API", description = "유저 삭제 API 입니다. 프론트 ㅎㅇㅌ~~~")
+    @DeleteMapping("/remove")
+    public ApiResponse<?> removeUser() {
+        return ApiResponse.onSuccess(userService.removeUser());
+    }
+
+
+
 
 }

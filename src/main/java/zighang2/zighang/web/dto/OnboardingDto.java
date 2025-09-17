@@ -46,8 +46,8 @@ public class OnboardingDto {
     public static class OnboardingSignupRequest {
         private Integer workExperience;
         private Education education;
-        private JobGroupEnum jobGroupEnum;
-        private List<JobPositionEnum> jobPositionEnum;
+        private JobGroupEnum jobGroups;
+        private List<JobPositionEnum> jobPositions;
         private Integer maxCommuteMinutes;
         private Transport transport;
         private String address;

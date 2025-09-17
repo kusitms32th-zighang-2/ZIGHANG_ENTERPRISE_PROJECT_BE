@@ -10,7 +10,7 @@ public enum CharacterName {
     REFRESH_EXPLORER("리프레시 탐험가"),
     WORABEL_WARRIOR("워라밸 용사"),
     OFFICE_ESCAPE("오피스 탈출러"),
-    WORKATION_VILLAIN("워케이션 빌런"),
+    WORKATION_MASTER("워케이션 마스터"),
     VACANCE_MAGICIAN("바캉스 마법사"),
 
     // 커리어 관련
@@ -29,15 +29,15 @@ public enum CharacterName {
     MEAL_SUPPORTER("식사 서포터즈"),
     MENU_ADVENTURER("메뉴 모험가"),
     BABSIM_INNOVATOR("밥심 혁신러"),
-    NIGHT_MEAL_HERO("밤심 히어로"),
+    LUNCH_POWERER("점심 파워러"),
 
     // 출퇴근 관련
     OFFWORK_MASTER("칼퇴 마스터"),
     COMMUTE_NINJA("출퇴근 닌자"),
-    COMMUTE_RACER("출근 레이서"),
+    COMMUTE_RACER("출퇴근 레이서"),
     TELEPORT_MASTER("순간이동 장인"),
     COMMUTE_GAMBLER("출근 겜블러"),
-    SHUTTLE_JUMPER("셔틀 점프러"),
+    SHUTTLE_JUMPER("셔틀 점핑러"),
     COMMUTE_TRANSCENDER("출퇴근 초월자"),
 
     // 생존/라이프 관련

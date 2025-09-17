@@ -173,4 +173,14 @@ public class UserService {
                 .message("온보딩 정보가 초기화되었습니다.")
                 .build();
     }
+
+    public String removeUser() {
+        Long userId = jwtProvider.getCurrentUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundHandler(ErrorStatus.USER_NOT_FOUND));
+
+        userRepository.deleteById(user.getId());
+
+        return "유저 삭제 성공";
+    }
 }

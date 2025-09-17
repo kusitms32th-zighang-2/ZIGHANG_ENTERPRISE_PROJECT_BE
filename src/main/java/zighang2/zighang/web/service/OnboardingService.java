@@ -187,10 +187,14 @@ public class OnboardingService {
         // 추천 처리 + DTO 응답 생성 공통 로직 사용
         List<Map.Entry<JobRecommend, Integer>> top6 = runRecommendationsAndSave(user, welfareList);
 
+        System.out.println("top6 = " + top6);
+
         // DTO 변환
         List<SearchDto.SearchResponse_2> searchResponses = top6.stream()
                 .map(entry -> SearchDto.SearchResponse_2.of(entry.getKey()))
                 .toList();
+
+        System.out.println("searchResponses.toString() = " + searchResponses.toString());
 
         return UserDto.MyPageAllResponse.builder()
                 .id(user.getId())
@@ -257,6 +261,10 @@ public class OnboardingService {
     }
 
     private void saveUserCompanyTypes(User user, List<CompanyTypeEnum> companyTypeEnums) {
+
+        userCompanyTypeRepository.deleteByUserId((user.getId()));
+        userCompanyTypeRepository.flush();
+
         if (companyTypeEnums != null && !companyTypeEnums.isEmpty()) {
             for (CompanyTypeEnum companyTypeEnum : companyTypeEnums) {
                 CompanyType companyType = companyTypeRepository.findByCompanyTypeName(companyTypeEnum)
@@ -272,13 +280,16 @@ public class OnboardingService {
 
     private List<Map.Entry<JobRecommend, Integer>> runRecommendationsAndSave(User user, List<String> welfareList) {
         List<JobRecommend> quickRecommendations = recommendService.getQuickRecommendations(user, welfareList);
+        System.out.println("quickRecommendations.toString() = " + quickRecommendations.toString());
         List<Map.Entry<JobRecommend, Integer>> commuteFiltered = recommendService.calculateJobCommuteTimes(quickRecommendations, user);
-
+        System.out.println("commuteFiltered = " + commuteFiltered);
         // 거리 기준 오름차순 정렬 후 상위 6개
         List<Map.Entry<JobRecommend, Integer>> top6 = commuteFiltered.stream()
                 .sorted(Comparator.comparingInt(Map.Entry::getValue))
                 .limit(6)
                 .toList();
+
+        System.out.println("top6 = " + top6);
 
         // commuteMinutes 설정 + 저장
         List<JobRecommend> top6Jobs = top6.stream()

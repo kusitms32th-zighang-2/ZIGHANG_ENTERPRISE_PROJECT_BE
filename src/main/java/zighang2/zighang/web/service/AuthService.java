@@ -16,6 +16,7 @@ import zighang2.zighang.web.dto.kakaoLogin.TokenResponseDto;
 import zighang2.zighang.web.repository.UserRepository;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
@@ -34,14 +35,20 @@ public class AuthService {
         String email = kakaoProfile.getKakao_account().getEmail();
         String name = kakaoProfile.getProperties().getNickname();
 
+        AtomicBoolean isFirst = new AtomicBoolean(false);
+
         User user = userRepository.findByEmail(email)
-                .orElseGet(() -> createNewUser(email, name));
+                .map(existingUser -> existingUser)
+                .orElseGet(() -> {
+                    isFirst.set(true);
+                    return createNewUser(email, name);
+                });
 
         String accessToken = jwtProvider.createAccessToken(user);
         String refreshToken = jwtProvider.createRefreshToken(user);
         redisService.setRefreshToken(user.getId(), refreshToken);
 
-        return new TokenResponseDto.LoginTokenResponseDto(user.getId(),accessToken, refreshToken);
+        return new TokenResponseDto.LoginTokenResponseDto(user.getId(),accessToken, refreshToken, isFirst.get());
     }
 
     private User createNewUser(String email, String name) {

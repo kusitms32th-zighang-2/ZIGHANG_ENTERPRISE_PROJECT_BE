@@ -71,6 +71,7 @@ public class JobPostingResponseDto {
         private List<String> recruitmentType;
         private String education;
         private Integer commuteMinutes;
+        private Transport transport;
         private String welfare;
 
     }
@@ -80,7 +81,6 @@ public class JobPostingResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class JobPostingListWrapper {
-        private Transport transport;
         private List<JobPostingListDto> jobs;
         private boolean hasNext;
     }

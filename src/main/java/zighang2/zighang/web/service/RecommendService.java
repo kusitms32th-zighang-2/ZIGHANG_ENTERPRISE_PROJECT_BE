@@ -538,6 +538,7 @@ public class RecommendService {
                                         .map(rt -> rt.getRecruitmentType().getRecruitmentType().name())
                                         .toList()
                         )
+                        .transport(user.getTransport())
                         .education(job.getEducation() != null ? job.getEducation().name() : null)
                         .commuteMinutes(job.getCommuteMinutes())
                         .welfare(job.getWelfare())
@@ -548,7 +549,6 @@ public class RecommendService {
         boolean hasNext = jobs.size() == 10;
 
         return JobPostingResponseDto.JobPostingListWrapper.builder()
-                .transport(user.getTransport())
                 .jobs(jobDtos)
                 .hasNext(hasNext)
                 .build();

@@ -548,6 +548,7 @@ public class RecommendService {
         boolean hasNext = jobs.size() == 10;
 
         return JobPostingResponseDto.JobPostingListWrapper.builder()
+                .transport(user.getTransport())
                 .jobs(jobDtos)
                 .hasNext(hasNext)
                 .build();

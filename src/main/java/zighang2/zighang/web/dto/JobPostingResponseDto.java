@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import zighang2.zighang.global.utils.WorkExperienceFormatter;
 import zighang2.zighang.web.domain.JobRecommend;
+import zighang2.zighang.web.domain.enums.Transport;
 
 import java.util.List;
 
@@ -79,6 +80,7 @@ public class JobPostingResponseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class JobPostingListWrapper {
+        private Transport transport;
         private List<JobPostingListDto> jobs;
         private boolean hasNext;
     }

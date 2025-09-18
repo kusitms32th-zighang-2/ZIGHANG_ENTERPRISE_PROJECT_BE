@@ -13,6 +13,7 @@ public class TokenResponseDto {
         private Long userId;
         private String accessToken;
         private String refreshToken;
+        private boolean isFirst;
     }
 
     @Getter

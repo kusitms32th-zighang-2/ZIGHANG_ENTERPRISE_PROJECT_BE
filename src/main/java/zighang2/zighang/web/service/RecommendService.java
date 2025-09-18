@@ -445,6 +445,7 @@ public class RecommendService {
         if (obj instanceof List<?>) {
             return ((List<?>) obj).stream()
                     .map(Object::toString)
+                    .distinct()
                     .collect(Collectors.joining("/"));
         } else if (obj != null) {
             return obj.toString();
